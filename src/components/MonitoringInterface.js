@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { getDatabase, ref, get, query, orderByKey, limitToLast } from 'firebase/database';
 import { initializeApp, getApps } from 'firebase/app';
 import { LOCATION_CONFIGS } from '../config/firebase-configs';
-import { ArrowUpRight, Thermometer, Droplets, Menu, X, ChevronUp, MapPin, Clock, TrendingUp, BarChart3, UserX, Users } from 'lucide-react';
+import { ArrowUpRight, Thermometer, Droplets, Menu, X, ChevronUp, MapPin, Clock, TrendingUp, BarChart3, UserX, Users, BookOpen, Cloud } from 'lucide-react';
 import {
   getAirQualityColor,
   formatPMValue,
@@ -20,7 +20,8 @@ import {
   getPMDetails,
   getPMReadingStatusAndColor
 } from '../data/monitoring-data';
-import { LiveActivityNumber } from '../components/Animation';
+import { LiveActivityNumber, useReducedMotion } from '../components/Animation'; // ตรวจสอบการนำเข้า useReducedMotion
+import { TriviaPopupContent } from '../data/trivia';
 import('./MapComponents');
 import HistoryData from './HistoryData';
 
@@ -78,6 +79,7 @@ const MonitoringPanel = ({ selectedLocation, onLocationClear }) => {
   const [showPMDetailPopup, setShowPMDetailPopup] = useState(false);
   const [showSensitiveGroupPopup, setShowSensitiveGroupPopup] = useState(false);
   const [showGeneralGroupPopup, setShowGeneralGroupPopup] = useState(false);
+  const [showTriviaPopup, setShowTriviaPopup] = useState(false);
   const [selectedPMType, setSelectedPMType] = useState(null);
   const [selectedLevel, setSelectedLevel] = useState(null);
   const [selectedGroupType, setSelectedGroupType] = useState('general');
@@ -94,6 +96,12 @@ const MonitoringPanel = ({ selectedLocation, onLocationClear }) => {
 
   const handleSensitiveGroupClick = () => setShowSensitiveGroupPopup(true);
   const handleGeneralGroupClick = () => setShowGeneralGroupPopup(true);
+  const handleTriviaClick = () => setShowTriviaPopup(true);
+
+  const closePopup = () => {
+    setShowRecommendationPopup(false);
+    setSelectedRecommendations([]);
+  };
 
   const { data: defaultData, loading: defaultLoading, error: defaultError } = useMonitoringData();
   const { data: locationData, loading: locationLoading, error: locationError } = useLocationMonitoringData(selectedLocation);
@@ -136,19 +144,18 @@ const MonitoringPanel = ({ selectedLocation, onLocationClear }) => {
     setShowRecommendationPopup(true);
   };
 
-  const closePopup = () => {
-    setShowRecommendationPopup(false);
-    setSelectedRecommendations([]);
-  };
-
   useEffect(() => {
     const handleEscapeKey = (event) => {
-      if (event.key === 'Escape' && showRecommendationPopup) {
-        closePopup();
+      if (event.key === 'Escape') {
+        if (showRecommendationPopup) closePopup();
+        if (showPMDetailPopup) closePMDetailPopup();
+        if (showSensitiveGroupPopup) setShowSensitiveGroupPopup(false);
+        if (showGeneralGroupPopup) setShowGeneralGroupPopup(false);
+        if (showTriviaPopup) setShowTriviaPopup(false);
       }
     };
 
-    if (showRecommendationPopup) {
+    if (showRecommendationPopup || showPMDetailPopup || showSensitiveGroupPopup || showGeneralGroupPopup || showTriviaPopup) {
       document.addEventListener('keydown', handleEscapeKey);
       document.body.style.overflow = 'hidden';
     } else {
@@ -159,7 +166,7 @@ const MonitoringPanel = ({ selectedLocation, onLocationClear }) => {
       document.removeEventListener('keydown', handleEscapeKey);
       document.body.style.overflow = 'unset';
     };
-  }, [showRecommendationPopup]);
+  }, [showRecommendationPopup, showPMDetailPopup, showSensitiveGroupPopup, showGeneralGroupPopup, showTriviaPopup]);
 
   if (loading) {
     return (
@@ -338,7 +345,12 @@ const MonitoringPanel = ({ selectedLocation, onLocationClear }) => {
             </div>
           </div>
 
-          <div className="border-t border-gray-100 pt-2 sm:pt-3">
+          <div
+            className="pt-2 sm:pt-3 mt-2 sm:mt-3"
+            style={{
+              borderTop: '1px solid #e5e5e5'
+            }}
+          >
             <div className="text-center">
               <div className="flex justify-center items-center gap-3 sm:gap-4 p-1 flex-wrap">
                 {(data.recommendations || []).slice(0, 5).map((recommendation, index) => {
@@ -347,27 +359,35 @@ const MonitoringPanel = ({ selectedLocation, onLocationClear }) => {
 
                   return (
                     <div key={index} className="flex flex-col items-center">
-                      {isImageIcon ? (
-                        <img
-                          src={iconPath}
-                          alt=""
-                          className="w-4 h-4 sm:w-6 sm:h-6 lg:w-7 lg:h-7"
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                            e.target.nextSibling.style.display = 'inline';
-                          }}
-                        />
-                      ) : (
-                        <span className="text-sm sm:text-base lg:text-lg">{iconPath}</span>
-                      )}
-                      {isImageIcon && (
-                        <span style={{ display: 'none' }} className="text-sm sm:text-base lg:text-lg">•</span>
-                      )}
+                      <div
+                        className="p-1 rounded-lg"
+                        style={{
+                          background: '#f8f8f8',
+                          boxShadow: 'inset 2px 2px 4px #e0e0e0, inset -2px -2px 4px #ffffff'
+                        }}
+                      >
+                        {isImageIcon ? (
+                          <img
+                            src={iconPath}
+                            alt=""
+                            className="w-4 h-4 sm:w-6 sm:h-6 lg:w-7 lg:h-7"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.nextSibling.style.display = 'inline';
+                            }}
+                          />
+                        ) : (
+                          <span className="text-sm sm:text-base lg:text-lg">{iconPath}</span>
+                        )}
+                        {isImageIcon && (
+                          <span style={{ display: 'none' }} className="text-sm sm:text-base lg:text-lg">•</span>
+                        )}
+                      </div>
                     </div>
                   );
                 })}
               </div>
-              <div className="text-xs sm:text-sm lg:text-base text-gray-500 mt-1 font-sarabun">
+              <div className="text-xs sm:text-sm lg:text-base text-gray-500 mt-3 font-sarabun">
                 คลิกที่ bubble สีด้านบนเพื่อดูคำแนะนำสำหรับแต่ละกลุ่ม
               </div>
             </div>
@@ -434,8 +454,11 @@ const MonitoringPanel = ({ selectedLocation, onLocationClear }) => {
                       onClick={() => handlePMReadingClick(reading.type)}
                       aria-label={`ดูข้อมูลเพิ่มเติมสำหรับ ${reading.type}`}
                     >
-                      <div className="text-sm sm:text-base lg:text-lg font-medium mb-1 opacity-90 font-montserrat">
-                        {reading.type}
+                      <div className="flex items-center justify-center gap-2">
+                        <Cloud className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                        <div className="text-sm sm:text-base lg:text-lg font-medium mb-1 opacity-90 font-montserrat">
+                          <strong>{reading.type}</strong>
+                        </div>
                       </div>
                       <div className="text-lg sm:text-2xl lg:text-3xl font-bold transform hover:scale-125 transition-transform duration-300 ease-in-out" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
                         <LiveActivityNumber
@@ -447,7 +470,7 @@ const MonitoringPanel = ({ selectedLocation, onLocationClear }) => {
                         />
                       </div>
                       <div className="text-xs sm:text-sm lg:text-base opacity-90 font-montserrat">
-                        μg/m³
+                        <strong>μg/m³</strong>
                       </div>
                     </button>
                   );
@@ -463,8 +486,11 @@ const MonitoringPanel = ({ selectedLocation, onLocationClear }) => {
               </div>
             )}
           </div>
-          </div>
+        </div>
+
         <SimpleChevronBar />
+        <TriviaCard onTriviaClick={handleTriviaClick} />
+
         {showPMDetailPopup && selectedPMType && createPortal(
           <div className="fixed inset-0 flex items-center justify-center" style={{ zIndex: 9999, backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
             <div className="bg-white rounded-lg max-w-2xl min-w-[20rem] w-full mx-4 p-8 max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
@@ -589,6 +615,13 @@ const MonitoringPanel = ({ selectedLocation, onLocationClear }) => {
           </div>,
           document.body
         )}
+
+        {showTriviaPopup && createPortal(
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 transition-opacity duration-300 ease-in-out" style={{ opacity: showTriviaPopup ? 1 : 0 }}>
+            <TriviaPopupContent onClose={() => setShowTriviaPopup(false)} />
+          </div>,
+          document.body
+        )}
       </div>
     </div>
   );
@@ -639,7 +672,7 @@ const MapComponentWrapper = ({ onLocationSelect }) => {
 // Footer Component
 const Footer = () => (
   <footer className="h-18 sm:h-20 bg-green-100 border-t border-green-100 flex-shrink-0 flex items-center justify-between p-4 sm:p-6">
-    <span className="text-base sm:text-lg lg:text-xl xl:text-2xl text-black font-montserrat">Created by Jaejae Dream Yok ❤️</span>
+    <span className="text-base sm:text-lg lg:text-xl xl:text-2xl text-black font-montserrat">© 2025 Jaejae Dream Yok. All rights reserved.</span>
     <div className="flex items-center gap-4 sm:gap-6">
       <div className="flex-shrink-0 flex items-center justify-center">
         <img
@@ -772,31 +805,15 @@ const SimpleChevronBar = () => {
               </button>
             </div>
             <div className="space-y-6">
-              {/* <div className="space-y-4"> */}
-                {/* <h4 className="text-2xl font-semibold text-gray-800 font-sarabun">เกณฑ์สำหรับระดับนี้</h4> */}
-                <div className="text-lg text-gray-600 font-sarabun">
-                  <strong>PC0.1:</strong> {formatRange(selectedLevel.ranges.pc01.min, selectedLevel.ranges.pc01.max, 'PNC')}
-                </div>
-                <div className="text-lg text-gray-600 font-sarabun">
-                  <strong>PM2.5:</strong> {formatRange(selectedLevel.ranges.pm25.min, selectedLevel.ranges.pm25.max, 'μg/m³')}
-                </div>
-                <div className="text-lg text-gray-600 font-sarabun">
-                  <strong>PM10:</strong> {formatRange(selectedLevel.ranges.pm10.min, selectedLevel.ranges.pm10.max, 'μg/m³')}
-                </div>
-              {/* </div> */}
-              {/* <div className="space-y-4">
-                <h4 className="text-2xl font-semibold text-gray-800 font-sarabun">เกณฑ์ทั้งหมด</h4>
-                {levels.map((level) => (
-                  <div key={level.label} className="text-lg text-gray-600 font-sarabun">
-                    <strong>{level.label}:</strong>
-                    <ul className="list-disc pl-6 mt-2">
-                      <li><strong>PC0.1:</strong> {formatRange(level.ranges.pc01.min, level.ranges.pc01.max, 'PNC')}</li>
-                      <li><strong>PM2.5:</strong> {formatRange(level.ranges.pm25.min, level.ranges.pm25.max, 'μg/m³')}</li>
-                      <li><strong>PM10:</strong> {formatRange(level.ranges.pm10.min, level.ranges.pm10.max, 'μg/m³')}</li>
-                    </ul>
-                  </div>
-                ))}
-              </div> */}
+              <div className="text-lg text-gray-600 font-sarabun">
+                <strong>PC0.1:</strong> {formatRange(selectedLevel.ranges.pc01.min, selectedLevel.ranges.pc01.max, 'PNC')}
+              </div>
+              <div className="text-lg text-gray-600 font-sarabun">
+                <strong>PM2.5:</strong> {formatRange(selectedLevel.ranges.pm25.min, selectedLevel.ranges.pm25.max, 'μg/m³')}
+              </div>
+              <div className="text-lg text-gray-600 font-sarabun">
+                <strong>PM10:</strong> {formatRange(selectedLevel.ranges.pm10.min, selectedLevel.ranges.pm10.max, 'μg/m³')}
+              </div>
             </div>
             <div className="mt-8">
               <button onClick={closePopup} className="w-full bg-green-500 hover:bg-green-600 text-white py-4 px-6 rounded-lg transition-colors text-xl font-medium font-sarabun">
@@ -811,12 +828,47 @@ const SimpleChevronBar = () => {
   );
 };
 
+
+// TriviaCard Component - Neomorphism Style (Softer Colors)
+const TriviaCard = ({ onTriviaClick }) => {
+  const prefersReducedMotion = useReducedMotion();
+
+  const handleClick = () => {
+    onTriviaClick();
+  };
+
+  return (
+    <div
+      className="p-3 mb-4 rounded-2xl cursor-pointer transition-all duration-300 ease-in-out hover:scale-105"
+      style={{
+        background: '#fafafa',
+        boxShadow: '6px 6px 12px #e8e8e8, -6px -6px 12px #ffffff'
+      }}
+      onClick={handleClick}
+    >
+      <div className="flex flex-col items-center">
+        <div
+          className="p-2 rounded-full mb-2 transition-all duration-300 ease-in-out hover:scale-110"
+          style={{
+            background: '#fafafa',
+            boxShadow: 'inset 3px 3px 6px #e8e8e8, inset -3px -3px 6px #ffffff'
+          }}
+        >
+          <BookOpen className="w-4 h-4 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-blue-500" />
+        </div>
+        <p className="text-center text-xs sm:text-sm lg:text-base font-sarabun text-gray-600">คลิกเพื่อดูเกร็ดความรู้</p>
+      </div>
+    </div>
+  );
+};
+
 // Export all components
 export {
   Header,
   MonitoringPanel,
   MapSection,
   SimpleChevronBar,
+  TriviaCard,
   Footer,
   HistoryData,
 };
