@@ -20,8 +20,8 @@ import {
   getPMDetails,
   getPMReadingStatusAndColor
 } from '../data/monitoring-data';
-import { LiveActivityNumber, useReducedMotion } from '../components/Animation'; // ตรวจสอบการนำเข้า useReducedMotion
-import { TriviaPopupContent } from '../data/trivia';
+import { LiveActivityNumber, useReducedMotion } from '../components/Animation';
+import { TriviaPopupContent, PMDetailsPopupContent } from '../data/trivia';
 import('./MapComponents');
 import HistoryData from './HistoryData';
 
@@ -35,7 +35,7 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 h-18 sm:h-20 bg-green-100 border-b border-green-100 flex-shrink-0">
+    <header className="sticky top-0 z-50 h-18 sm:h-20 bg-gradient-to-r from-green-100 to-green-300 border-b-2 border-gray-200 flex-shrink-0">
       <div className="h-full flex items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-4 sm:gap-6">
           <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 flex items-center justify-center">
@@ -56,7 +56,7 @@ const Header = () => {
         </div>
 
         <nav className="hidden sm:flex items-center gap-4 sm:gap-6">
-          <Link href="/" className="px-4 py-2 text-lg sm:text-xl lg:text-2xl font-semibold text-black rounded-lg hover:bg-green-200 transition-colors font-montserrat">
+          <Link href="/" className="px-4 py-2 text-lg sm:text-xl lg:text-2xl font-semibold text-black rounded-lg hover:bg-green-600 transition-colors font-montserrat">
             Air quality
           </Link>
         </nav>
@@ -65,7 +65,7 @@ const Header = () => {
           className="sm:hidden"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
         >
-          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          {isMenuOpen ? <X size={24} className="text-white" /> : <Menu size={24} className="text-white" />}
         </button>
       </div>
     </header>
@@ -80,6 +80,7 @@ const MonitoringPanel = ({ selectedLocation, onLocationClear }) => {
   const [showSensitiveGroupPopup, setShowSensitiveGroupPopup] = useState(false);
   const [showGeneralGroupPopup, setShowGeneralGroupPopup] = useState(false);
   const [showTriviaPopup, setShowTriviaPopup] = useState(false);
+  const [showPMDetailsPopup, setShowPMDetailsPopup] = useState(false);
   const [selectedPMType, setSelectedPMType] = useState(null);
   const [selectedLevel, setSelectedLevel] = useState(null);
   const [selectedGroupType, setSelectedGroupType] = useState('general');
@@ -97,6 +98,7 @@ const MonitoringPanel = ({ selectedLocation, onLocationClear }) => {
   const handleSensitiveGroupClick = () => setShowSensitiveGroupPopup(true);
   const handleGeneralGroupClick = () => setShowGeneralGroupPopup(true);
   const handleTriviaClick = () => setShowTriviaPopup(true);
+  const handlePMDetailsClick = () => setShowPMDetailsPopup(true);
 
   const closePopup = () => {
     setShowRecommendationPopup(false);
@@ -152,10 +154,11 @@ const MonitoringPanel = ({ selectedLocation, onLocationClear }) => {
         if (showSensitiveGroupPopup) setShowSensitiveGroupPopup(false);
         if (showGeneralGroupPopup) setShowGeneralGroupPopup(false);
         if (showTriviaPopup) setShowTriviaPopup(false);
+        if (showPMDetailsPopup) setShowPMDetailsPopup(false);
       }
     };
 
-    if (showRecommendationPopup || showPMDetailPopup || showSensitiveGroupPopup || showGeneralGroupPopup || showTriviaPopup) {
+    if (showRecommendationPopup || showPMDetailPopup || showSensitiveGroupPopup || showGeneralGroupPopup || showTriviaPopup || showPMDetailsPopup) {
       document.addEventListener('keydown', handleEscapeKey);
       document.body.style.overflow = 'hidden';
     } else {
@@ -166,7 +169,7 @@ const MonitoringPanel = ({ selectedLocation, onLocationClear }) => {
       document.removeEventListener('keydown', handleEscapeKey);
       document.body.style.overflow = 'unset';
     };
-  }, [showRecommendationPopup, showPMDetailPopup, showSensitiveGroupPopup, showGeneralGroupPopup, showTriviaPopup]);
+  }, [showRecommendationPopup, showPMDetailPopup, showSensitiveGroupPopup, showGeneralGroupPopup, showTriviaPopup, showPMDetailsPopup]);
 
   if (loading) {
     return (
@@ -212,6 +215,7 @@ const MonitoringPanel = ({ selectedLocation, onLocationClear }) => {
       <div className="p-3 sm:p-4">
         <div className="flex items-center justify-between mb-3 sm:mb-4">
           <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-light text-black font-montserrat">UFPs Monitoring</h2>
+        </div>
         </div>
 
         <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-gray-100 mb-3 sm:mb-4">
@@ -392,270 +396,268 @@ const MonitoringPanel = ({ selectedLocation, onLocationClear }) => {
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="bg-white rounded-lg p-2 sm:p-3 shadow-sm border border-gray-100 mb-2 sm:mb-3">
-          <h3 className="text-base sm:text-lg lg:text-xl xl:text-2xl font-medium text-gray-800 mb-2 sm:mb-3 font-sarabun">ข้อมูลมลพิษทางอากาศ</h3>
-          <div className="grid grid-cols-2 gap-1 sm:gap-2">
-            {isDataValid ? (
-              (() => {
-                const pm25Reading = data.pmReadings.find(r => r && r.type === 'PM2.5');
-                const pm10Reading = data.pmReadings.find(r => r && r.type === 'PM10');
+          <div className="bg-white rounded-lg p-2 sm:p-3 shadow-sm border border-gray-100 mb-2 sm:mb-3">
+            <h3 className="text-base sm:text-lg lg:text-xl xl:text-2xl font-medium text-gray-800 mb-2 sm:mb-3 font-sarabun">ข้อมูลมลพิษทางอากาศ</h3>
+            <div className="grid grid-cols-2 gap-1 sm:gap-2">
+              {isDataValid ? (
+                (() => {
+                  const pm25Reading = data.pmReadings.find(r => r && r.type === 'PM2.5');
+                  const pm10Reading = data.pmReadings.find(r => r && r.type === 'PM10');
 
-                console.log('=== PM SUMMARY CARD DEBUG ===');
-                console.log('All PM Readings:', data.pmReadings);
-                console.log('PM2.5 Reading:', pm25Reading);
-                console.log('PM10 Reading:', pm10Reading);
-                console.log('============================');
+                  console.log('=== PM SUMMARY CARD DEBUG ===');
+                  console.log('All PM Readings:', data.pmReadings);
+                  console.log('PM2.5 Reading:', pm25Reading);
+                  console.log('PM10 Reading:', pm10Reading);
+                  console.log('============================');
 
-                const pmDataToShow = [pm25Reading, pm10Reading].filter(Boolean);
+                  const pmDataToShow = [pm25Reading, pm10Reading].filter(Boolean);
 
-                return pmDataToShow.length > 0 ? pmDataToShow.map((reading, index) => {
-                  let numericValue = 0;
-                  if (typeof reading.value === 'number') {
-                    numericValue = reading.value;
-                  } else if (reading.value !== undefined) {
-                    numericValue = parseFloat(String(reading.value).replace(/[^\d.-]/g, '')) || 0;
-                  }
+                  return pmDataToShow.length > 0 ? pmDataToShow.map((reading, index) => {
+                    let numericValue = 0;
+                    if (typeof reading.value === 'number') {
+                      numericValue = reading.value;
+                    } else if (reading.value !== undefined) {
+                      numericValue = parseFloat(String(reading.value).replace(/[^\d.-]/g, '')) || 0;
+                    }
 
-                  // Get status and color for PM2.5
-                  const pm25StatusAndColor = pm25Reading
-                    ? getPMReadingStatusAndColor({
-                      type: 'PM2.5',
-                      value: parseFloat(pm25Reading.value) || 0,
-                      pm25Value: parseFloat(pm25Reading.value) || 0
-                    })
-                    : { status: 'Good', color: '#2DC653' };
+                    // Get status and color for PM2.5
+                    const pm25StatusAndColor = pm25Reading
+                      ? getPMReadingStatusAndColor({
+                        type: 'PM2.5',
+                        value: parseFloat(pm25Reading.value) || 0,
+                        pm25Value: parseFloat(pm25Reading.value) || 0
+                      })
+                      : { status: 'Good', color: '#2DC653' };
 
-                  // Get status for PM10 (if needed), but use PM2.5's color
-                  const pm10StatusAndColor = pm10Reading && reading.type === 'PM10'
-                    ? getPMReadingStatusAndColor({
-                      type: 'PM10',
-                      value: numericValue,
-                      pm25Value: parseFloat(pm25Reading?.value) || 0
-                    })
-                    : pm25StatusAndColor;
+                    // Get status for PM10 (if needed), but use PM2.5's color
+                    const pm10StatusAndColor = pm10Reading && reading.type === 'PM10'
+                      ? getPMReadingStatusAndColor({
+                        type: 'PM10',
+                        value: numericValue,
+                        pm25Value: parseFloat(pm25Reading?.value) || 0
+                      })
+                      : pm25StatusAndColor;
 
-                  // Force PM10 to use PM2.5's color
-                  const individualColor = pm25StatusAndColor.color;
-                  const individualStatus = reading.type === 'PM2.5' ? pm25StatusAndColor.status : pm10StatusAndColor.status;
+                    // Force PM10 to use PM2.5's color
+                    const individualColor = pm25StatusAndColor.color;
+                    const individualStatus = reading.type === 'PM2.5' ? pm25StatusAndColor.status : pm10StatusAndColor.status;
 
-                  console.log(`=== ${reading.type} INDIVIDUAL STATUS ===`);
-                  console.log('Value:', numericValue);
-                  console.log('Individual Status:', individualStatus);
-                  console.log('Individual Color:', individualColor);
-                  console.log('=====================================');
+                    console.log(`=== ${reading.type} INDIVIDUAL STATUS ===`);
+                    console.log('Value:', numericValue);
+                    console.log('Individual Status:', individualStatus);
+                    console.log('Individual Color:', individualColor);
+                    console.log('=====================================');
 
-                  return (
-                    <button
-                      key={`${reading.type}-${selectedLocation?.id || 'default'}-${index}`}
-                      className="rounded-lg p-2 sm:p-3 text-white text-center bg-opacity-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 hover:shadow-lg"
-                      style={{ backgroundColor: individualColor }}
-                      onClick={() => handlePMReadingClick(reading.type)}
-                      aria-label={`ดูข้อมูลเพิ่มเติมสำหรับ ${reading.type}`}
-                    >
-                      <div className="flex items-center justify-center gap-2">
-                        <Cloud className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                        <div className="text-sm sm:text-base lg:text-lg font-medium mb-1 opacity-90 font-montserrat">
-                          <strong>{reading.type}</strong>
+                    return (
+                      <button
+                        key={`${reading.type}-${selectedLocation?.id || 'default'}-${index}`}
+                        className="rounded-lg p-2 sm:p-3 text-white text-center bg-opacity-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 hover:shadow-lg"
+                        style={{ backgroundColor: individualColor }}
+                        onClick={() => handlePMReadingClick(reading.type)}
+                        aria-label={`ดูคำแนะนำสำหรับ ${reading.type}`}
+                      >
+                        <div className="flex items-center justify-center gap-2">
+                          <Cloud className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                          <div className="text-sm sm:text-base lg:text-lg font-medium mb-1 opacity-90 font-montserrat">
+                            <strong>{reading.type}</strong>
+                          </div>
                         </div>
-                      </div>
-                      <div className="text-lg sm:text-2xl lg:text-3xl font-bold transform hover:scale-125 transition-transform duration-300 ease-in-out" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
-                        <LiveActivityNumber
-                          value={numericValue}
-                          type="cascade-slide"
-                          decimals={2}
-                          className="text-white"
-                          showChangeIndicator={false}
-                        />
-                      </div>
-                      <div className="text-xs sm:text-sm lg:text-base opacity-90 font-montserrat">
-                        <strong>μg/m³</strong>
-                      </div>
-                    </button>
+                        <div className="text-lg sm:text-2xl lg:text-3xl font-bold transform hover:scale-125 transition-transform duration-300 ease-in-out" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
+                          <LiveActivityNumber
+                            value={numericValue}
+                            type="cascade-slide"
+                            decimals={2}
+                            className="text-white"
+                            showChangeIndicator={false}
+                          />
+                        </div>
+                        <div className="text-xs sm:text-sm lg:text-base opacity-90 font-montserrat">
+                          <strong>μg/m³</strong>
+                        </div>
+                      </button>
+                    );
+                  }) : (
+                    <div className="col-span-2 text-center text-xs sm:text-sm text-gray-500 py-4 font-sarabun">
+                      ไม่พบข้อมูล PM2.5 และ PM10
+                    </div>
                   );
-                }) : (
-                  <div className="col-span-2 text-center text-xs sm:text-sm text-gray-500 py-4 font-sarabun">
-                    ไม่พบข้อมูล PM2.5 และ PM10
+                })()
+              ) : (
+                <div className="col-span-2 text-center text-xs sm:text-sm text-gray-500 py-4 font-sarabun">
+                  ไม่มีข้อมูลมลพิษในขณะนี้
+                </div>
+              )}
+            </div>
+          </div>
+
+          <SimpleChevronBar />
+          <TriviaCard onTriviaClick={handleTriviaClick} />
+          {showPMDetailPopup && selectedPMType && createPortal(
+            <div className="fixed inset-0 flex items-center justify-center" style={{ zIndex: 9999, backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+              <div className="bg-white rounded-lg max-w-2xl min-w-[20rem] w-full mx-4 p-8 max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                <div className="flex justify-between items-center mb-6">
+                  <h3 id="pm-detail-modal-title" className="text-2xl font-semibold text-black font-sarabun">
+                    คำแนะนำสำหรับ {getPMDetails(selectedPMType).title}
+                  </h3>
+                  <button onClick={closePMDetailPopup} className="text-gray-500 hover:text-gray-700 text-3xl font-bold transition-colors p-1 rounded-md hover:bg-gray-100">
+                    ×
+                  </button>
+                </div>
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    {isDataValid && data.pmReadings && (
+                      (() => {
+                        const reading = data.pmReadings.find(r => r && r.type === selectedPMType);
+                        const status = reading ? getPMReadingStatusAndColor(reading).status : 'Good';
+                        const recommendations = getGeneralRecommendations(status);
+                        return recommendations.map((rec, index) => (
+                          <div key={index} className="flex items-center gap-6 p-6 bg-gray-50 rounded-lg">
+                            {typeof getRecommendationIcon(rec) === 'string' && getRecommendationIcon(rec).startsWith('/assets/images/') ? (
+                              <img src={getRecommendationIcon(rec)} alt="" className="w-12 h-12" />
+                            ) : (
+                              <span className="text-2xl">{getRecommendationIcon(rec)}</span>
+                            )}
+                            <p className="text-gray-600 text-lg font-sarabun">{rec}</p>
+                          </div>
+                        ));
+                      })()
+                    )}
                   </div>
-                );
-              })()
-            ) : (
-              <div className="col-span-2 text-center text-xs sm:text-sm text-gray-500 py-4 font-sarabun">
-                ไม่มีข้อมูลมลพิษในขณะนี้
+                </div>
+                <div className="mt-8">
+                  <button onClick={closePMDetailPopup} className="w-full bg-green-500 hover:bg-green-600 text-white py-4 px-6 rounded-lg transition-colors text-xl font-medium font-sarabun">
+                    ปิด
+                  </button>
+                </div>
               </div>
-            )}
+            </div>,
+            document.body
+          )}
+
+          {showSensitiveGroupPopup && createPortal(
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+              <div className="bg-white rounded-lg max-w-2xl min-w-[20rem] w-full mx-4 p-8 max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-2xl font-semibold text-black font-sarabun">คำแนะนำสำหรับกลุ่มเปราะบาง</h3>
+                  <button
+                    onClick={() => setShowSensitiveGroupPopup(false)}
+                    className="text-black hover:text-gray-700 text-3xl"
+                  >
+                    ×
+                  </button>
+                </div>
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    {getSensitiveRecommendations(sensitiveStatus).map((rec, index) => {
+                      const iconPath = getRecommendationIcon(rec);
+                      return (
+                        <div key={index} className="flex items-center gap-6 p-6 bg-gray-50 rounded-lg">
+                          {typeof iconPath === 'string' && iconPath.startsWith('/assets/images/') ? (
+                            <img src={iconPath} alt="" className="w-12 h-12" />
+                          ) : (
+                            <span className="text-2xl">{iconPath}</span>
+                          )}
+                          <p className="text-gray-600 text-lg font-sarabun">{rec}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="mt-8">
+                  <button onClick={() => setShowSensitiveGroupPopup(false)} className="w-full bg-green-500 hover:bg-green-600 text-white py-4 px-6 rounded-lg transition-colors text-xl font-medium font-sarabun">
+                    ปิด
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body
+          )}
+
+          {showGeneralGroupPopup && createPortal(
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+              <div className="bg-white rounded-lg max-w-2xl min-w-[20rem] w-full mx-4 p-8 max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-2xl font-semibold text-black font-sarabun">คำแนะนำสำหรับคนทั่วไป</h3>
+                  <button
+                    onClick={() => setShowGeneralGroupPopup(false)}
+                    className="text-gray-500 hover:text-gray-700 text-3xl"
+                  >
+                    ×
+                  </button>
+                </div>
+                <div className="space-y-6">
+                  <div className="space-y-4">
+                    {getGeneralRecommendations(generalStatus).map((rec, index) => {
+                      const iconPath = getRecommendationIcon(rec);
+                      return (
+                        <div key={index} className="flex items-center gap-6 p-6 bg-gray-50 rounded-lg">
+                          {typeof iconPath === 'string' && iconPath.startsWith('/assets/images/') ? (
+                            <img src={iconPath} alt="" className="w-12 h-12" />
+                          ) : (
+                            <span className="text-2xl">{iconPath}</span>
+                          )}
+                          <p className="text-gray-600 text-lg font-sarabun">{rec}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="mt-8">
+                  <button onClick={() => setShowGeneralGroupPopup(false)} className="w-full bg-green-500 hover:bg-green-600 text-white py-4 px-6 rounded-lg transition-colors text-xl font-medium font-sarabun">
+                    ปิด
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body
+          )}
+
+          {showTriviaPopup && createPortal(
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 transition-opacity duration-300 ease-in-out" style={{ opacity: showTriviaPopup ? 1 : 0 }}>
+              <TriviaPopupContent onClose={() => setShowTriviaPopup(false)} />
+            </div>,
+            document.body
+          )}
+
+        {showPMDetailsPopup && createPortal(
+          <PMDetailsPopupContent onClose={() => setShowPMDetailsPopup(false)} />,
+          document.body
+          )}
+        </div>
+      </div>
+      );
+};
+
+      // MapSection Component
+      const MapSection = ({selectedLocation, onLocationSelect}) => {
+  return (
+      <div className="flex-1 p-4 h-full bg-white">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base sm:text-lg lg:text-xl xl:text-2xl font-medium text-gray-800 mb-2 sm:mb-3 font-sarabun">แผนที่ตำแหน่งตรวจวัด</h2>
+          <div className="text-sm text-gray-500 font-sarabun">
+            คลิกที่หมุดเพื่อดูข้อมูล
           </div>
         </div>
 
-        <SimpleChevronBar />
-        <TriviaCard onTriviaClick={handleTriviaClick} />
-
-        {showPMDetailPopup && selectedPMType && createPortal(
-          <div className="fixed inset-0 flex items-center justify-center" style={{ zIndex: 9999, backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
-            <div className="bg-white rounded-lg max-w-2xl min-w-[20rem] w-full mx-4 p-8 max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between mb-6">
-                <h3 id="pm-detail-modal-title" className="text-2xl font-bold text-black font-sarabun">
-                  {getPMDetails(selectedPMType).title}
-                </h3>
-                <button onClick={closePMDetailPopup} className="text-gray-500 hover:text-gray-700 text-3xl font-bold transition-colors p-1 rounded-md hover:bg-gray-100">
-                  ×
-                </button>
-              </div>
-              <div className="space-y-6">
-                <div className="p-6 bg-gray-50 rounded-lg">
-                  <h4 className="text-2xl font-semibold mb-3 text-black font-sarabun">คำอธิบาย</h4>
-                  <p className="text-lg text-black font-sarabun">{getPMDetails(selectedPMType).description}</p>
-                </div>
-                <div className="p-6 bg-gray-50 rounded-lg">
-                  <h4 className="text-2xl font-semibold mb-3 text-black font-sarabun">แหล่งที่มา</h4>
-                  <p className="text-lg text-black font-sarabun">{getPMDetails(selectedPMType).sources}</p>
-                </div>
-                <div className="p-6 bg-gray-50 rounded-lg">
-                  <h4 className="text-2xl font-semibold mb-3 text-black font-sarabun">ผลกระทบระยะสั้น</h4>
-                  <ul className="list-disc pl-6 text-lg text-black font-sarabun">
-                    {getPMDetails(selectedPMType)['short-term']?.map((impact, index) => (
-                      <li key={index}>{impact}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="p-6 bg-gray-50 rounded-lg">
-                  <h4 className="text-2xl font-semibold mb-3 text-black font-sarabun">ผลกระทบระยะยาว</h4>
-                  <ul className="list-disc pl-6 text-lg text-black font-sarabun">
-                    {getPMDetails(selectedPMType)['long-term']?.map((impact, index) => (
-                      <li key={index}>{impact}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-              <div className="mt-8">
-                <button onClick={closePMDetailPopup} className="w-full bg-green-500 hover:bg-green-600 text-white py-4 px-6 rounded-lg transition-colors text-xl font-medium font-sarabun">
-                  ปิด
-                </button>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
-
-        {showSensitiveGroupPopup && createPortal(
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-white rounded-lg max-w-2xl min-w-[20rem] w-full mx-4 p-8 max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-semibold text-black font-sarabun">คำแนะนำสำหรับกลุ่มเปราะบาง</h3>
-                <button
-                  onClick={() => setShowSensitiveGroupPopup(false)}
-                  className="text-black hover:text-gray-700 text-3xl"
-                >
-                  ×
-                </button>
-              </div>
-              <div className="space-y-6">
-                <div className="space-y-4">
-                  {getSensitiveRecommendations(sensitiveStatus).map((rec, index) => {
-                    const iconPath = getRecommendationIcon(rec);
-                    return (
-                      <div key={index} className="flex items-center gap-6 p-6 bg-gray-50 rounded-lg">
-                        {typeof iconPath === 'string' && iconPath.startsWith('/assets/images/') ? (
-                          <img src={iconPath} alt="" className="w-12 h-12" />
-                        ) : (
-                          <span className="text-2xl">{iconPath}</span>
-                        )}
-                        <p className="text-gray-600 text-lg font-sarabun">{rec}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-              <div className="mt-8">
-                <button onClick={() => setShowSensitiveGroupPopup(false)} className="w-full bg-green-500 hover:bg-green-600 text-white py-4 px-6 rounded-lg transition-colors text-xl font-medium font-sarabun">
-                  ปิด
-                </button>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
-
-        {showGeneralGroupPopup && createPortal(
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-white rounded-lg max-w-2xl min-w-[20rem] w-full mx-4 p-8 max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-semibold text-black font-sarabun">คำแนะนำสำหรับคนทั่วไป</h3>
-                <button
-                  onClick={() => setShowGeneralGroupPopup(false)}
-                  className="text-gray-500 hover:text-gray-700 text-3xl"
-                >
-                  ×
-                </button>
-              </div>
-              <div className="space-y-6">
-                <div className="space-y-4">
-                  {getGeneralRecommendations(generalStatus).map((rec, index) => {
-                    const iconPath = getRecommendationIcon(rec);
-                    return (
-                      <div key={index} className="flex items-center gap-6 p-6 bg-gray-50 rounded-lg">
-                        {typeof iconPath === 'string' && iconPath.startsWith('/assets/images/') ? (
-                          <img src={iconPath} alt="" className="w-12 h-12" />
-                        ) : (
-                          <span className="text-2xl">{iconPath}</span>
-                        )}
-                        <p className="text-gray-600 text-lg font-sarabun">{rec}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-              <div className="mt-8">
-                <button onClick={() => setShowGeneralGroupPopup(false)} className="w-full bg-green-500 hover:bg-green-600 text-white py-4 px-6 rounded-lg transition-colors text-xl font-medium font-sarabun">
-                  ปิด
-                </button>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
-
-        {showTriviaPopup && createPortal(
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 transition-opacity duration-300 ease-in-out" style={{ opacity: showTriviaPopup ? 1 : 0 }}>
-            <TriviaPopupContent onClose={() => setShowTriviaPopup(false)} />
-          </div>,
-          document.body
-        )}
-      </div>
-    </div>
-  );
-};
-
-// MapSection Component
-const MapSection = ({ selectedLocation, onLocationSelect }) => {
-  return (
-    <div className="flex-1 p-4 h-full bg-white">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-base sm:text-lg lg:text-xl xl:text-2xl font-medium text-gray-800 mb-2 sm:mb-3 font-sarabun">แผนที่ตำแหน่งตรวจวัด</h2>
-        <div className="text-sm text-gray-500 font-sarabun">
-          คลิกที่หมุดเพื่อดูข้อมูล
+        <div className="w-full h-[calc(100%-60px)] bg-gray-100 rounded-lg border border-gray-200 overflow-hidden">
+          <MapComponentWrapper onLocationSelect={onLocationSelect} />
         </div>
       </div>
-
-      <div className="w-full h-[calc(100%-60px)] bg-gray-100 rounded-lg border border-gray-200 overflow-hidden">
-        <MapComponentWrapper onLocationSelect={onLocationSelect} />
-      </div>
-    </div>
-  );
+      );
 };
 
-// MapComponentWrapper Component
-const MapComponentWrapper = ({ onLocationSelect }) => {
+      // MapComponentWrapper Component
+      const MapComponentWrapper = ({onLocationSelect}) => {
   const [MapComponents, setMapComponents] = useState(null);
 
   useEffect(() => {
-    import('./MapComponents').then((module) => {
-      setMapComponents(() => module.default);
-    });
+        import('./MapComponents').then((module) => {
+          setMapComponents(() => module.default);
+        });
   }, []);
 
-  if (!MapComponents) {
+      if (!MapComponents) {
     return (
       <div className="w-full h-full flex items-center justify-center">
         <div className="text-center text-gray-500">
@@ -663,212 +665,211 @@ const MapComponentWrapper = ({ onLocationSelect }) => {
           <p className="text-sm font-sarabun">กำลังโหลดแผนที่...</p>
         </div>
       </div>
-    );
+      );
   }
 
-  return <MapComponents onLocationSelect={onLocationSelect} />;
+      return <MapComponents onLocationSelect={onLocationSelect} />;
 };
 
 // Footer Component
 const Footer = () => (
-  <footer className="h-18 sm:h-20 bg-green-100 border-t border-green-100 flex-shrink-0 flex items-center justify-between p-4 sm:p-6">
-    <span className="text-base sm:text-lg lg:text-xl xl:text-2xl text-black font-montserrat">© 2025 Jaejae Dream Yok. All rights reserved.</span>
-    <div className="flex items-center gap-4 sm:gap-6">
-      <div className="flex-shrink-0 flex items-center justify-center">
-        <img
-          src="/assets/images/logo.png"
-          alt="Mupcop logo"
-          className="w-20 h-20 sm:w-24 sm:h-24 object-contain"
-          width={96}
-          height={96}
-        />
-      </div>
-      <div>
-        <p className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-black font-montserrat">Mupcop</p>
-      </div>
-    </div>
-  </footer>
-);
+  <footer className="h-18 sm:h-20 bg-gradient-to-r from-green-100 to-green-300 border-b-2 border-gray-200 flex-shrink-0 flex items-center justify-between p-4 sm:p-6">
+        <span className="text-base sm:text-lg lg:text-xl xl:text-2xl text-black font-montserrat">© 2025 Jaejae Dream Yok. All rights reserved.</span>
+        <div className="flex items-center gap-4 sm:gap-6">
+          <div className="flex-shrink-0 flex items-center justify-center">
+            <img
+              src="/assets/images/logo.png"
+              alt="Mupcop logo"
+              className="w-20 h-20 sm:w-24 sm:h-24 object-contain"
+              width={96}
+              height={96}
+            />
+          </div>
+          <div>
+            <p className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-black font-montserrat">Mupcop</p>
+          </div>
+        </div>
+      </footer>
+      );
 
 // SimpleChevronBar Component
 const SimpleChevronBar = () => {
   // Define levels with ranges for each pollutant
-  const levelKeys = Object.keys(PM_THRESHOLDS?.PC01 || {});
+  const levelKeys = Object.keys(PM_THRESHOLDS?.PC01 || { });
   const levels = levelKeys.map((level, index) => {
     const prevThresholds = index > 0 ? {
-      pc01: PM_THRESHOLDS?.PC01?.[levelKeys[index - 1]] || 0,
+        pc01: PM_THRESHOLDS?.PC01?.[levelKeys[index - 1]] || 0,
       pm25: PM_THRESHOLDS?.PM?.[levelKeys[index - 1]] || 0,
       pm10: PM_THRESHOLDS?.PM10?.[levelKeys[index - 1]] || 0,
-    } : { pc01: 0, pm25: 0, pm10: 0 };
+    } : {pc01: 0, pm25: 0, pm10: 0 };
 
-    return {
-      label: level,
+      return {
+        label: level,
       color: getAirQualityColor(level),
       pc01: PM_THRESHOLDS?.PC01?.[level] || 0,
       pm25: PM_THRESHOLDS?.["PM2.5"]?.[level] || 0,
       pm10: PM_THRESHOLDS?.PM10?.[level] || 0,
       ranges: {
         pc01: {
-          min: prevThresholds.pc01,
-          max: PM_THRESHOLDS?.PC01?.[level] || Infinity,
+        min: prevThresholds.pc01,
+      max: PM_THRESHOLDS?.PC01?.[level] || Infinity,
         },
-        pm25: {
-          min: prevThresholds.pm25,
-          max: PM_THRESHOLDS?.["PM2.5"]?.[level] || Infinity,
+      pm25: {
+        min: prevThresholds.pm25,
+      max: PM_THRESHOLDS?.["PM2.5"]?.[level] || Infinity,
         },
-        pm10: {
-          min: prevThresholds.pm10,
-          max: PM_THRESHOLDS?.PM10?.[level] || Infinity,
+      pm10: {
+        min: prevThresholds.pm10,
+      max: PM_THRESHOLDS?.PM10?.[level] || Infinity,
         },
       },
     };
   });
 
-  const [selectedLevel, setSelectedLevel] = useState(null);
+      const [selectedLevel, setSelectedLevel] = useState(null);
 
   const handleLevelClick = (level) => {
-    setSelectedLevel(level);
+        setSelectedLevel(level);
   };
 
   const closePopup = () => {
-    setSelectedLevel(null);
+        setSelectedLevel(null);
   };
 
-  const chevronWidth = 130;
-  const chevronHeight = 50;
-  const svgWidth = chevronWidth * levels.length;
+      const chevronWidth = 130;
+      const chevronHeight = 50;
+      const svgWidth = chevronWidth * levels.length;
 
   // Helper function to format range text
   const formatRange = (min, max, unit = '') => {
     if (max === Infinity) {
       return `> ${min} ${unit}`;
     }
-    if (min === 0) {
+      if (min === 0) {
       return `≤ ${max} ${unit}`;
     }
     return `> ${min} และ ≤ ${max} ${unit}`;
   };
 
-  return (
-    <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-gray-100 mb-3 sm:mb-4">
-      <h3 className="text-base sm:text-lg lg:text-2xl font-medium text-gray-800 mb-3 font-sarabun">
-        ระดับคุณภาพอากาศ
-      </h3>
-      <div className="relative mb-3">
-        <svg viewBox={`0 0 ${svgWidth} ${chevronHeight}`} className="w-full h-12 sm:h-14">
-          {levels.map((level, index) => {
-            const x = index * chevronWidth;
-            return (
-              <g key={level.label} className="hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-in-out">
-                <path
-                  d={`M ${x} 5 
+      return (
+      <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-gray-100 mb-3 sm:mb-4">
+        <h3 className="text-base sm:text-lg lg:text-2xl font-medium text-gray-800 mb-3 font-sarabun">
+          ระดับคุณภาพอากาศ
+        </h3>
+        <div className="relative mb-3">
+          <svg viewBox={`0 0 ${svgWidth} ${chevronHeight}`} className="w-full h-12 sm:h-14">
+            {levels.map((level, index) => {
+              const x = index * chevronWidth;
+              return (
+                <g key={level.label} className="hover:shadow-xl hover:-translate-y-1 transition-all duration-300 ease-in-out">
+                  <path
+                    d={`M ${x} 5 
                     L ${x + chevronWidth - 10} 5 
                     L ${x + chevronWidth} 25 
                     L ${x + chevronWidth - 10} 45 
                     L ${x} 45 
                     ${index > 0 ? `L ${x + 10} 25` : `L ${x} 25`} 
                     Z`}
-                  fill={level.color}
-                  stroke="rgba(255,255,255,0.5)"
-                  strokeWidth="1"
-                  onClick={() => handleLevelClick(level)}
-                  style={{ cursor: 'pointer' }}
-                />
-                <text
-                  x={x + chevronWidth / 2}
-                  y="28"
-                  textAnchor="middle"
-                  fill="white"
-                  fontSize="15"
-                  fontWeight="600"
-                  className="font-montserrat"
-                  style={{ textShadow: '1px 1px 1px rgba(0,0,0,0.8)' }}
-                >
-                  {level.label}
-                </text>
-              </g>
-            );
-          })}
-        </svg>
-      </div>
+                    fill={level.color}
+                    stroke="rgba(255,255,255,0.5)"
+                    strokeWidth="1"
+                    onClick={() => handleLevelClick(level)}
+                    style={{ cursor: 'pointer' }}
+                  />
+                  <text
+                    x={x + chevronWidth / 2}
+                    y="28"
+                    textAnchor="middle"
+                    fill="white"
+                    fontSize="15"
+                    fontWeight="600"
+                    className="font-montserrat"
+                    style={{ textShadow: '1px 1px 1px rgba(0,0,0,0.8)' }}
+                  >
+                    {level.label}
+                  </text>
+                </g>
+              );
+            })}
+          </svg>
+        </div>
 
-      {selectedLevel && createPortal(
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white rounded-lg max-w-2xl min-w-[20rem] w-full mx-4 p-8 max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()} style={{ maxHeight: '80vh', overflowY: 'auto' }}>
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-semibold text-black font-sarabun">{selectedLevel.label}</h3>
-              <button
-                onClick={closePopup}
-                className="text-gray-500 hover:text-gray-700 text-3xl"
-              >
-                ×
-              </button>
-            </div>
-            <div className="space-y-6">
-              <div className="text-lg text-gray-600 font-sarabun">
-                <strong>PC0.1:</strong> {formatRange(selectedLevel.ranges.pc01.min, selectedLevel.ranges.pc01.max, 'PNC')}
+        {selectedLevel && createPortal(
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="bg-white rounded-lg max-w-2xl min-w-[20rem] w-full mx-4 p-8 max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()} style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-semibold text-black font-sarabun">{selectedLevel.label}</h3>
+                <button
+                  onClick={closePopup}
+                  className="text-gray-500 hover:text-gray-700 text-3xl"
+                >
+                  ×
+                </button>
               </div>
-              <div className="text-lg text-gray-600 font-sarabun">
-                <strong>PM2.5:</strong> {formatRange(selectedLevel.ranges.pm25.min, selectedLevel.ranges.pm25.max, 'μg/m³')}
+              <div className="space-y-6">
+                <div className="text-lg text-gray-600 font-sarabun">
+                  <strong>PC0.1:</strong> {formatRange(selectedLevel.ranges.pc01.min, selectedLevel.ranges.pc01.max, 'PNC')}
+                </div>
+                <div className="text-lg text-gray-600 font-sarabun">
+                  <strong>PM2.5:</strong> {formatRange(selectedLevel.ranges.pm25.min, selectedLevel.ranges.pm25.max, 'μg/m³')}
+                </div>
+                <div className="text-lg text-gray-600 font-sarabun">
+                  <strong>PM10:</strong> {formatRange(selectedLevel.ranges.pm10.min, selectedLevel.ranges.pm10.max, 'μg/m³')}
+                </div>
               </div>
-              <div className="text-lg text-gray-600 font-sarabun">
-                <strong>PM10:</strong> {formatRange(selectedLevel.ranges.pm10.min, selectedLevel.ranges.pm10.max, 'μg/m³')}
+              <div className="mt-8">
+                <button onClick={closePopup} className="w-full bg-green-500 hover:bg-green-600 text-white py-4 px-6 rounded-lg transition-colors text-xl font-medium font-sarabun">
+                  ปิด
+                </button>
               </div>
             </div>
-            <div className="mt-8">
-              <button onClick={closePopup} className="w-full bg-green-500 hover:bg-green-600 text-white py-4 px-6 rounded-lg transition-colors text-xl font-medium font-sarabun">
-                ปิด
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
-    </div>
-  );
+          </div>,
+          document.body
+        )}
+      </div>
+      );
 };
 
-
-// TriviaCard Component - Neomorphism Style (Softer Colors)
-const TriviaCard = ({ onTriviaClick }) => {
+      // TriviaCard Component - Neomorphism Style (Softer Colors)
+      const TriviaCard = ({onTriviaClick}) => {
   const prefersReducedMotion = useReducedMotion();
 
   const handleClick = () => {
-    onTriviaClick();
+        onTriviaClick();
   };
 
-  return (
-    <div
-      className="p-3 mb-4 rounded-2xl cursor-pointer transition-all duration-300 ease-in-out hover:scale-105"
-      style={{
-        background: '#fafafa',
-        boxShadow: '6px 6px 12px #e8e8e8, -6px -6px 12px #ffffff'
-      }}
-      onClick={handleClick}
-    >
-      <div className="flex flex-col items-center">
-        <div
-          className="p-2 rounded-full mb-2 transition-all duration-300 ease-in-out hover:scale-110"
-          style={{
-            background: '#fafafa',
-            boxShadow: 'inset 3px 3px 6px #e8e8e8, inset -3px -3px 6px #ffffff'
-          }}
-        >
-          <BookOpen className="w-4 h-4 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-blue-500" />
+      return (
+      <div
+        className="p-3 mb-4 rounded-2xl cursor-pointer transition-all duration-300 ease-in-out hover:scale-105"
+        style={{
+          background: '#fafafa',
+          boxShadow: '6px 6px 12px #e8e8e8, -6px -6px 12px #ffffff'
+        }}
+        onClick={handleClick}
+      >
+        <div className="flex flex-col items-center">
+          <div
+            className="p-2 rounded-full mb-2 transition-all duration-300 ease-in-out hover:scale-110"
+            style={{
+              background: '#fafafa',
+              boxShadow: 'inset 3px 3px 6px #e8e8e8, inset -3px -3px 6px #ffffff'
+            }}
+          >
+            <BookOpen className="w-4 h-4 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-blue-500" />
+          </div>
+          <p className="text-center text-xs sm:text-sm lg:text-base font-sarabun text-gray-600">คลิกเพื่อดูเกร็ดความรู้</p>
         </div>
-        <p className="text-center text-xs sm:text-sm lg:text-base font-sarabun text-gray-600">คลิกเพื่อดูเกร็ดความรู้</p>
       </div>
-    </div>
-  );
+      );
 };
 
-// Export all components
-export {
-  Header,
-  MonitoringPanel,
-  MapSection,
-  SimpleChevronBar,
-  TriviaCard,
-  Footer,
-  HistoryData,
+      // Export all components
+      export {
+        Header,
+        MonitoringPanel,
+        MapSection,
+        SimpleChevronBar,
+        TriviaCard,
+        Footer,
+        HistoryData,
 };
