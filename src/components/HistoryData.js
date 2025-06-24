@@ -208,16 +208,17 @@ const HistoryData = ({ selectedLocation }) => {
     const pc01ColorDaily = getAirQualityColor(pc01StatusDaily);
 
     return (
-        <div className="rounded-lg shadow-lg p-5 flex flex-col gap-4">
+        // <div className="w-full bg-white">
+        <div className="rounded-lg shadow-lg p-6 flex flex-col gap-6">
             {/* Header with title on left and subtitle on right */}
-            <div className="flex justify-between items-center mb-2 sm:mb-3">
+            <div className="flex justify-between items-center mb-3 sm:mb-4">
                 <h2 className="text-base sm:text-lg lg:text-xl xl:text-2xl font-medium text-gray-800 font-sarabun">ข้อมูลย้อนหลัง</h2>
                 <div className="text-sm text-gray-500 font-sarabun">
                     {loading ? 'กำลังโหลด...' : `สถานที่: ${locationConfig.name}`}
                 </div>
             </div>
             {/* Hourly Card */}
-            <div className="rounded-lg p-4 bg-gray-100">
+            <div className="rounded-lg p-4 bg-gray-50">
                 <div className="mb-4">
                     <div className="text-2xl font-semibold font-sarabun text-gray-800">Hourly</div>
                 </div>
@@ -267,7 +268,7 @@ const HistoryData = ({ selectedLocation }) => {
                 </div>
             </div>
             {/* Daily Card */}
-            <div className="rounded-lg p-4 bg-gray-100">
+            <div className="rounded-lg p-4 bg-gray-50">
                 <div className="mb-4">
                     <div className="text-2xl font-semibold font-sarabun text-gray-800">Daily</div>
                 </div>
@@ -317,6 +318,7 @@ const HistoryData = ({ selectedLocation }) => {
                 </div>
             </div>
         </div>
+            // </div>
     );
 };
 

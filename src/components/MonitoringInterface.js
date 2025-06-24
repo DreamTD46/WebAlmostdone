@@ -21,7 +21,7 @@ import {
   getPMReadingStatusAndColor
 } from '../data/monitoring-data';
 import { LiveActivityNumber, useReducedMotion } from '../components/Animation';
-import { TriviaPopupContent, PMDetailsPopupContent } from '../data/trivia';
+import { TriviaPopupContent} from '../data/trivia';
 import('./MapComponents');
 import HistoryData from './HistoryData';
 
@@ -498,7 +498,7 @@ const MonitoringPanel = ({ selectedLocation, onLocationClear }) => {
               <div className="bg-white rounded-lg max-w-2xl min-w-[20rem] w-full mx-4 p-8 max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
                 <div className="flex justify-between items-center mb-6">
                   <h3 id="pm-detail-modal-title" className="text-2xl font-semibold text-black font-sarabun">
-                    คำแนะนำสำหรับ {getPMDetails(selectedPMType).title}
+                    คำแนะนำสำหรับคนทั่วไป 
                   </h3>
                   <button onClick={closePMDetailPopup} className="text-gray-500 hover:text-gray-700 text-3xl font-bold transition-colors p-1 rounded-md hover:bg-gray-100">
                     ×

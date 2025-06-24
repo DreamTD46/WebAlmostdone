@@ -1,272 +1,288 @@
-import React, { useState, useEffect, useRef } from 'react';
+'use client'
+import React, { useState } from 'react';
 
-const TRIVIA_DATA = [
-    {
-        title: "Particle Count (จำนวนอนุภาค)",
-        description: [
-            "หมายถึงการนับจำนวนอนุภาคฝุ่น โดยไม่คำนึงถึงขนาดหรือน้ำหนัก",
-            "วัดเป็นหน่วย particles/m³ หรือ particles/cm³",
-            "เหมาะสำหรับการติดตามอนุภาคขนาดเล็กมาก เช่น ultrafine particles",
-            "ใช้เทคนิค optical particle counting หรือ condensation particle counting"
+const TRIVIA_DATA = {
+    'PM2.5': {
+        title: 'PM2.5 (ฝุ่นละอองขนาดเล็ก ≤ 2.5 ไมโครเมตร)',
+        description: 'ฝุ่น PM2.5 คือฝุ่นละอองที่ลอยอยู่ในอากาศโดยวัดเส้นผ่านศูนย์กลางได้ 2.5 ไมโครเมตรหรือน้อยกว่านั้น PM2.5 มีขนาดเล็กมากกระทั่งมันสามารถถูกดูดซึมเข้าไปในกระแสเลือดได้เมื่อสูดหายใจเข้าไป ด้วยเหตุนี้ มันจึงเป็นสารมลพิษที่เป็นภัยต่อสุขภาพมากที่สุด',
+        sources: 'แหล่งที่มาของมันอาจถูกส่งออกมาจากแหล่งที่มนุษย์สร้างขึ้นหรือแหล่งที่มาตามธรรมชาติก็ได้ หรืออาจถูกสร้างขึ้นโดยสารมลพิษอื่น การเผาไหม้ที่เป็นผลมาจากโรงงานพลังงาน ควันและเขม่าจากไฟป่าและการเผาขยะ การปล่อยมลพิษจากรถยนต์และการเผาไหม้จากมอเตอร์ กระบวนการทางอุตสาหกรรมที่เกี่ยวข้องกับปฏิกิริยาทางเคมีระหว่างก๊าซ(ซัลเฟอร์ไดออกไซด์ ไนโตรเจนออกไซด์ และสารประกอบอินทรีย์ระเหย)',
+        'short-term': [
+            'การระคายเคืองต่อดวงตา คอ และจมูก',
+            'การเต้นของหัวใจที่ผิดปกติ',
+            'โรคหอบหืด',
+            'การไอ อาการแน่นหน้าอก และอาการหายใจลำบาก'
+        ],
+        'long-term': [
+            'การอุดตันของเส้นโลหิตที่ไปเลี้ยงสมอง',
+            'การเสียชีวิตก่อนวัยอันควร',
+            'โรคระบบทางเดินหายใจ เช่น โรคหลอดลมอักเสบ โรคหอบหืด โรคถุงลมโป่งพอง',
+            'ความเสียหายต่อเนื้อเยื่อปอด',
+            'มะเร็ง',
+            'โรคหัวใจ'
+        ],
+    },
+    'PM10': {
+        title: 'PM10 (อนุภาคหยาบ ≤ 10 ไมครอน)',
+        description: 'PM10 คือฝุ่นละอองแขวนลอยในอากาศที่มีเส้นผ่านศูนย์กลาง 10 ไมโครเมตรหรือน้อยกว่า (รวมถึงควัน เขม่าควัน เกลือ กรด และโลหะ) ความแตกต่างอยู่ในขนาดของมัน PM10 นั้นหยาบและใหญ่กว่า PM2.5',
+        sources: 'ฝุ่นผงจากการก่อสร้าง การถมที่ และเกษตรกรรม ฝุ่นผงที่ปลิวจากที่เปิด ควันจากไฟป่าและการเผาขยะ ปฏิกิริยาทางเคมีจากอุตสาหกรรม รถยนต์',
+        'short-term': [
+            'อาการหายใจลำบาก',
+            'อาการเจ็บหน้าอก',
+            'อาการอึดอัดในระบบทางเดินหายใจทั่วไป',
+            'อาการเจ็บคอ',
+            'อาการคัดจมูก'
+        ],
+        'long-term': [
+            'ความเสียหายของเนื้อเยื่อปอด',
+            'อาการหอบหืด',
+            'การเสียชีวิตก่อนวัยอันควร'
         ]
     },
-    {
-        title: "Particle Matter (มวลอนุภาค)",
-        description: [
-            "หมายถึงมวลรวมของอนุภาคฝุ่นที่ลอยอยู่ในอากาศ",
-            "วัดเป็นหน่วย μg/m³ (ไมโครกรัมต่อลูกบาศก์เมตร)",
-            "แบ่งตามขนาดอนุภาค เช่น PM2.5, PM10",
-            "เหมาะสำหรับประเมินผลกระทบต่อสุขภาพและการกำหนดมาตรฐานคุณภาพอากาศ"
+    'HourlyMeanPC0.1': {
+        title: 'Hourly Mean PC0.1 (ค่าเฉลี่ยรายชั่วโมงของอนุภาคขนาดเล็ก)',
+        description: 'ค่าเฉลี่ยรายชั่วโมงของจำนวนอนุภาคขนาดเล็ก (PC0.1) วัดเป็นอนุภาคต่อลูกบาศก์เซนติเมตร (PNC) หากระดับต่ำกว่า 20,000 อนุภาค/ลูกบาศก์เซนติเมตร จะใช้เกณฑ์เดียวกับ PC0.1 (Good, Warning, Affects health, Danger, Hazardous) หากระดับ ≥ 20,000 จะถือว่าเป็น Hazardous',
+        sources: 'การเผาไหม้จากยานพาหนะ โรงงานอุตสาหกรรม ควันจากไฟป่า และกิจกรรมที่ก่อให้เกิดฝุ่น',
+        'short-term': [
+            'การระคายเคืองต่อระบบทางเดินหายใจ',
+            'อาการไอหรือหายใจลำบาก'
+        ],
+        'long-term': [
+            'ความเสี่ยงต่อโรคระบบทางเดินหายใจ'
         ]
     },
-    {
-        title: "ความแตกต่างสำคัญ",
-        description: [
-            "อนุภาคขนาดเล็กจำนวนมากอาจมีมวลรวมน้อย แต่มี particle count สูง",
-            "อนุภาคขนาดใหญ่จำนวนน้อยอาจมีมวลรวมมาก แต่มี particle count ต่ำ",
-            "การวัด particle matter มักใช้ในการกำกับดูแลสิ่งแวดล้อมและสาธารณสุข",
-            "การวัด particle count มักใช้ในงานวิจัยและการประเมินแหล่งกำเนิดมลพิษ"
+    'DailyMeanPC0.1': {
+        title: 'Daily Mean PC0.1 (ค่าเฉลี่ยรายวันของอนุภาคขนาดเล็ก)',
+        description: 'ค่าเฉลี่ยรายวันของจำนวนอนุภาคขนาดเล็ก (PC0.1) วัดเป็นอนุภาคต่อลูกบาศก์เซนติเมตร (PNC) ระดับสูงอาจบ่งชี้ถึงมลพิษในอากาศที่ต่อเนื่องและส่งผลต่อสุขภาพในระยะยาว',
+        sources: 'การเผาไหม้จากยานพาหนะ โรงงานอุตสาหกรรม ควันจากไฟป่า และกิจกรรมที่ก่อให้เกิดฝุ่น',
+        'short-term': [
+            'การระคายเคืองต่อระบบทางเดินหายใจ'
+        ],
+        'long-term': [
+            'ความเสี่ยงต่อโรคระบบทางเดินหายใจ',
+            'ผลกระทบต่อสุขภาพหัวใจและหลอดเลือด'
         ]
     },
-    {
-        title: "PM2.5 (ฝุ่นละอองขนาดเล็ก ≤ 2.5 ไมโครเมตร)",
-        description: [
-            "ฝุ่น PM2.5 คือฝุ่นละอองที่ลอยอยู่ในอากาศโดยวัดเส้นผ่านศูนย์กลางได้ 2.5 ไมโครเมตรหรือน้อยกว่านั้น PM2.5 มีขนาดเล็กมากกระทั่งมันสามารถถูกดูดซึมเข้าไปในกระแสเลือดได้เมื่อสูดหายใจเข้าไป ด้วยเหตุนี้ มันจึงเป็นสารมลพิษที่เป็นภัยต่อสุขภาพมากที่สุด",
-            "แหล่งที่มาของมันอาจถูกส่งออกมาจากแหล่งที่มนุษย์สร้างขึ้นหรือแหล่งที่มาตามธรรมชาติก็ได้ หรืออาจถูกสร้างขึ้นโดยสารมลพิษอื่น การเผาไหม้ที่เป็นผลมาจากโรงงานพลังงาน ควันและเขม่าจากไฟป่าและการเผาขยะ การปล่อยมลพิษจากรถยนต์และการเผาไหม้จากมอเตอร์ กระบวนการทางอุตสาหกรรมที่เกี่ยวข้องกับปฏิกิริยาทางเคมีระหว่างก๊าซ(ซัลเฟอร์ไดออกไซด์ ไนโตรเจนออกไซด์ และสารประกอบอินทรีย์ระเหย)",
-            "ผลกระทบระยะสั้น: การระคายเคืองต่อดวงตา คอ และจมูก, การเต้นของหัวใจที่ผิดปกติ, โรคหอบหืด, การไอ อาการแน่นหน้าอก และอาการหายใจลำบาก",
-            "ผลกระทบระยะยาว: การอุดตันของเส้นโลหิตที่ไปเลี้ยงสมอง, การเสียชีวิตก่อนวัยอันควร, โรคระบบทางเดินหายใจ เช่น โรคหลอดลมอักเสบ โรคหอบหืด โรคถุงลมโป่งพอง, ความเสียหายต่อเนื้อเยื่อปอด, มะเร็ง, โรคหัวใจ"
-        ]
-    },
-    {
-        title: "PM10 (อนุภาคหยาบ ≤ 10 ไมครอน)",
-        description: [
-            "PM10 คือฝุ่นละอองแขวนลอยในอากาศที่มีเส้นผ่านศูนย์กลาง 10 ไมโครเมตรหรือน้อยกว่า (รวมถึงควัน เขม่าควัน เกลือ กรด และโลหะ) ความแตกการอยู่ในขนาดของมัน PM10 นั้นหยาบและใหญ่กว่า PM2.5",
-            "ฝุ่นผงจากการก่อสร้าง การถมที่ และเกษตรกรรม ฝุ่นผงที่ปลิวจากที่เปิด ควันจากไฟป่าและการเผาขยะ ปฏิกิริยาทางเคมีจากอุตสาหกรรม รถยนต์",
-            "ผลกระทบระยะสั้น: อาการหายใจลำบาก, อาการเจ็บหน้าอก, อาการอึดอัดในระบบทางเดินหายใจทั่วไป, อาการเจ็บคอ, อาการคัดจมูก",
-            "ผลกระทบระยะยาว: ความเสียหายของเนื้อเยื่อปอด, อาการหอบหืด, การเสียชีวิตก่อนวัยอันควร"
-        ]
-    },
-    {
-        title: "Hourly Mean PC0.1 (ค่าเฉลี่ยรายชั่วโมงของอนุภาคขนาดเล็ก)",
-        description: [
-            "ค่าเฉลี่ยรายชั่วโมงของจำนวนอนุภาคขนาดเล็ก (PC0.1) วัดเป็นอนุภาคต่อลูกบาศก์เซนติเมตร (PNC) หากระดับต่ำกว่า 20,000 อนุภาค/ลูกบาศก์เซนติเมตร จะใช้เกณฑ์เดียวกับ PC01 (Good, Warning, Affects health, Danger, Hazardous) หากระดับ ≥ 20,000 จะถือว่าเป็น Hazardous",
-            "การเผาไหม้จากยานพาหนะ โรงงานอุตสาหกรรม ควันจากไฟป่า และกิจกรรมที่ก่อให้เกิดฝุ่น",
-            "ผลกระทบระยะสั้น: การระคายเคืองต่อระบบทางเดินหายใจ, อาการไอหรือหายใจลำบาก",
-            "ผลกระทบระยะยาว: ความเสี่ยงต่อโรคระบบทางเดินหายใจ"
-        ]
-    },
-    {
-        title: "Daily Mean PC0.1 (ค่าเฉลี่ยรายวันของอนุภาคขนาดเล็ก)",
-        description: [
-            "ค่าเฉลี่ยรายวันของจำนวนอนุภาคขนาดเล็ก (PC0.1) วัดเป็นอนุภาคต่อลูกบาศก์เซนติเมตร (PNC) ระดับสูงอาจบ่งชี้ถึงมลพิษในอากาศที่ต่อเนื่องและส่งผลต่อสุขภาพในระยะยาว",
-            "การเผาไหม้จากยานพาหนะ โรงงานอุตสาหกรรม ควันจากไฟป่า และกิจกรรมที่ก่อให้เกิดฝุ่น",
-            "ผลกระทบระยะสั้น: การระคายเคืองต่อระบบทางเดินหายใจ",
-            "ผลกระทบระยะยาว: ความเสี่ยงต่อโรคระบบทางเดินหายใจ, ผลกระทบต่อสุขภาพหัวใจและหลอดเลือด"
-        ]
-    }
-];
+    'PCvsPM': [
+        {
+            title: 'PC และ PM คืออะไร?',
+            description: [
+                'PM (Particulate Matter) คือฝุ่นละอองที่มีขนาดต่าง ๆ วัดจากเส้นผ่านศูนย์กลางเป็นไมโครเมตร เช่น PM2.5, PM10',
+                'PC (Particle Count) คือการนับจำนวนอนุภาคในอากาศต่อหน่วยปริมาตร (เช่น PC0.1) วัดเป็นอนุภาคต่อลูกบาศก์เซนติเมตร',
+                'PM วัดมวลของฝุ่น ส่วน PC วัดจำนวนอนุภาค'
+            ]
+        },
+        {
+            title: 'ความแตกต่างระหว่าง PC และ PM',
+            description: [
+                'ขนาด: PM วัดขนาดอนุภาค (เช่น ≤2.5 หรือ ≤10 ไมโครเมตร) ส่วน PC วัดอนุภาคขนาดเล็กมาก (เช่น 0.1 ไมโครเมตร)',
+                'หน่วยวัด: PM ใช้หน่วยไมโครกรัมต่อลูกบาศก์เมตร (μg/m³) ส่วน PC ใช้อนุภาคต่อลูกบาศก์เซนติเมตร (PNC)',
+                'ผลกระทบ: PC0.1 อาจอันตรายกว่าเนื่องจากขนาดเล็กมาก สามารถแทรกซึมเข้าสู่ร่างกายได้ลึก'
+            ]
+        },
+        {
+            title: 'การใช้งานข้อมูล PC และ PM',
+            description: [
+                'PM: ใช้ประเมินคุณภาพอากาศทั่วไปและผลกระทบต่อสุขภาพ เช่น PM2.5 ที่เกี่ยวข้องกับโรคทางเดินหายใจ',
+                'PC: ใช้ตรวจจับอนุภาคขนาดเล็กพิเศษที่อาจมองไม่เห็นด้วยการวัด PM เช่น ในพื้นที่ที่มีมลพิษสูง',
+                'ทั้งสองช่วยในการกำหนดนโยบายควบคุมมลพิษและปกป้องสุขภาพประชาชน'
+            ]
+        }
+    ]
+};
 
 const TriviaPopupContent = ({ onClose }) => {
-    return (
-        <div className="bg-white rounded-lg max-w-2xl min-w-[20rem] w-full mx-4 p-8 max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-semibold text-black font-sarabun">เกร็ดความรู้</h3>
-                <button
-                    onClick={onClose}
-                    className="text-gray-500 hover:text-gray-700 text-3xl"
-                >
-                    ×
-                </button>
-            </div>
-            <div className="space-y-6">
-                {TRIVIA_DATA.map((trivia, index) => (
-                    <div key={index} className="p-6 bg-gray-50 rounded-lg">
-                        <h4 className="text-xl font-semibold mb-3 text-black font-sarabun">{trivia.title}</h4>
-                        <ul className="list-disc pl-6 text-lg text-gray-600 font-sarabun">
-                            {trivia.description.map((item, idx) => (
-                                <li key={idx}>{item}</li>
-                            ))}
-                        </ul>
-                    </div>
-                ))}
-            </div>
-            <div className="mt-8">
-                <button onClick={onClose} className="w-full bg-green-500 hover:bg-green-600 text-white py-4 px-6 rounded-lg transition-colors text-xl font-medium font-sarabun">
-                    ปิด
-                </button>
-            </div>
-        </div>
-    );
-};
+    const [selectedTopic, setSelectedTopic] = useState(null);
 
-const PMDetailsPopupContent = ({ onClose }) => {
-    const [currentSlide, setCurrentSlide] = useState(0);
-    const slides = TRIVIA_DATA.slice(3); // PM2.5, PM10, HourlyMeanPC0.1, DailyMeanPC0.1
-    const trackRef = useRef(null);
-    let autoPlayInterval = useRef(null);
-    let progressInterval = useRef(null);
+    const topics = [
+        { key: 'PM2.5', title: TRIVIA_DATA['PM2.5'].title },
+        { key: 'PM10', title: TRIVIA_DATA['PM10'].title },
+        { key: 'HourlyMeanPC0.1', title: TRIVIA_DATA['HourlyMeanPC0.1'].title },
+        { key: 'DailyMeanPC0.1', title: TRIVIA_DATA['DailyMeanPC0.1'].title },
+        { key: 'PCvsPM_0', title: TRIVIA_DATA['PCvsPM'][0].title },
+        { key: 'PCvsPM_1', title: TRIVIA_DATA['PCvsPM'][1].title },
+        { key: 'PCvsPM_2', title: TRIVIA_DATA['PCvsPM'][2].title }
+    ];
 
-    const updateSlideClasses = () => {
-        const slideElements = document.querySelectorAll('.popup-slide');
-        const indicatorElements = document.querySelectorAll('.indicator');
-
-        slideElements.forEach((slide, index) => {
-            slide.className = 'popup-slide';
-            if (index === currentSlide) {
-                slide.classList.add('center');
-            } else if (Math.abs(index - currentSlide) === 1) {
-                slide.classList.add('side');
-            } else {
-                slide.classList.add('far');
-            }
-        });
-
-        indicatorElements.forEach((indicator, index) => {
-            indicator.className = 'indicator';
-            if (index === currentSlide) {
-                indicator.classList.add('active');
-            }
-        });
-
-        if (trackRef.current) {
-            const offset = (currentSlide * -330) + (slides.length * 165) - 165;
-            trackRef.current.style.transform = `translateX(${offset}px)`;
+    const renderDetailPopup = (topicKey) => {
+        let data;
+        if (topicKey.startsWith('PCvsPM_')) {
+            const index = parseInt(topicKey.split('_')[1]);
+            data = TRIVIA_DATA['PCvsPM'][index];
+        } else {
+            data = TRIVIA_DATA[topicKey];
         }
-    };
 
-    const nextSlide = () => {
-        setCurrentSlide((prev) => (prev + 1) % slides.length);
-        resetAutoPlay();
-    };
+        return (
+            <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-20 z-50 p-4">
+                <div className="bg-white rounded-xl w-96 shadow-2xl border border-gray-200 overflow-hidden">
+                    {/* Header */}
+                    <div className="flex justify-between items-start p-5 pb-3 border-b border-gray-100">
+                        <h3 className="text-2xl font-bold text-gray-800 font-sarabun leading-tight pr-2">{data.title}</h3>
+                        <button
+                            onClick={() => setSelectedTopic(null)}
+                            className="text-gray-500 hover:text-gray-700 text-2xl font-bold transition-all duration-200 p-1 rounded-full hover:bg-gray-100"
+                            aria-label="ปิดป๊อปอัพ"
+                        >
+                            ×
+                        </button>
+                    </div>
 
-    const prevSlide = () => {
-        setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-        resetAutoPlay();
-    };
-
-    const startAutoPlay = () => {
-        let progress = 0;
-        const progressBar = document.getElementById('progressBar');
-
-        autoPlayInterval.current = setInterval(() => {
-            nextSlide();
-        }, 5000);
-
-        progressInterval.current = setInterval(() => {
-            progress += 2;
-            if (progressBar) progressBar.style.width = `${progress}%`;
-            if (progress >= 100) progress = 0;
-        }, 100);
-    };
-
-    const resetAutoPlay = () => {
-        clearInterval(autoPlayInterval.current);
-        clearInterval(progressInterval.current);
-        const progressBar = document.getElementById('progressBar');
-        if (progressBar) progressBar.style.width = '0%';
-        startAutoPlay();
-    };
-
-    const setupTouchEvents = (container) => {
-        let startX = 0;
-        let isDragging = false;
-
-        container.addEventListener('touchstart', (e) => {
-            startX = e.touches[0].clientX;
-            isDragging = true;
-        });
-
-        container.addEventListener('touchmove', (e) => {
-            if (!isDragging) return;
-            e.preventDefault();
-        });
-
-        container.addEventListener('touchend', (e) => {
-            if (!isDragging) return;
-            const endX = e.changedTouches[0].clientX;
-            const diff = startX - endX;
-            if (Math.abs(diff) > 50) {
-                if (diff > 0) nextSlide();
-                else prevSlide();
-            }
-            isDragging = false;
-        });
-
-        container.addEventListener('mousedown', (e) => {
-            startX = e.clientX;
-            isDragging = true;
-        });
-
-        container.addEventListener('mousemove', (e) => {
-            if (!isDragging) return;
-            e.preventDefault();
-        });
-
-        container.addEventListener('mouseup', (e) => {
-            if (!isDragging) return;
-            const diff = startX - e.clientX;
-            if (Math.abs(diff) > 50) {
-                if (diff > 0) nextSlide();
-                else prevSlide();
-            }
-            isDragging = false;
-        });
-    };
-
-    useEffect(() => {
-        updateSlideClasses();
-        startAutoPlay();
-        const container = document.querySelector('.popup-container');
-        if (container) setupTouchEvents(container);
-
-        return () => {
-            clearInterval(autoPlayInterval.current);
-            clearInterval(progressInterval.current);
-        };
-    }, [currentSlide]);
-
-    return (
-        <div className="bg-white rounded-lg max-w-3xl min-w-[20rem] w-full mx-4 p-8 max-h-[70vh] shadow-2xl" style={{ position: 'relative', zIndex: 1001 }}>
-            <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-semibold text-black font-sarabun">รายละเอียดมลพิษทางอากาศ</h3>
-                <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-3xl font-bold transition-colors p-1 rounded-md hover:bg-gray-100">
-                    ×
-                </button>
-            </div>
-            <div className="carousel-wrapper" style={{ position: 'relative', width: '100%', height: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                <div ref={trackRef} className="carousel-track" style={{ display: 'flex', transition: 'transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)', gap: '30px' }}>
-                    {slides.map((trivia, index) => (
-                        <div key={index} className="popup-slide" style={{ minWidth: '300px', height: '300px', background: 'linear-gradient(135deg, #ffffff, #f8f9fa)', borderRadius: '20px', padding: '20px', boxShadow: '0 20px 40px rgba(0,0,0,0.3)', transition: 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'center', textAlign: 'center' }}>
-                            <h4 className="slide-title" style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '15px', color: 'inherit' }}>{trivia.title}</h4>
-                            <ul className="slide-content" style={{ fontSize: '1rem', lineHeight: '1.6', opacity: '0.9', listStyle: 'disc', paddingLeft: '20px', textAlign: 'left' }}>
-                                {trivia.description.map((item, idx) => (
-                                    <li key={idx}>{item}</li>
-                                ))}
-                            </ul>
+                    {/* Scrollable Content */}
+                    <div className="max-h-80 overflow-y-auto px-5 py-3">
+                        <div className="space-y-4">
+                            {data.description && typeof data.description === 'string' && (
+                                <div className="flex items-start space-x-3">
+                                    <div className="w-7 h-7 bg-blue-200 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                        <svg className="w-4 h-4 text-blue-800" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-4a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1zm0-4a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clipRule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <p className="text-lg text-gray-800 font-sarabun leading-relaxed">{data.description}</p>
+                                </div>
+                            )}
+                            {data.description && Array.isArray(data.description) && (
+                                <div className="space-y-3">
+                                    {data.description.map((item, idx) => (
+                                        <div key={idx} className="flex items-start space-x-3">
+                                            <div className="w-7 h-7 bg-blue-200 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                                <svg className="w-4 h-4 text-blue-800" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                </svg>
+                                            </div>
+                                            <p className="text-lg text-gray-800 font-sarabun leading-relaxed">{item}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            {data.sources && (
+                                <div className="flex items-start space-x-3">
+                                    <div className="w-7 h-7 bg-green-200 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                        <svg className="w-4 h-4 text-green-800" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 className="text-lg font-bold text-gray-800 font-sarabun mb-2">แหล่งที่มา</h4>
+                                        <p className="text-lg text-gray-800 font-sarabun leading-relaxed">{data.sources}</p>
+                                    </div>
+                                </div>
+                            )}
+                            {data['short-term'] && (
+                                <div className="flex items-start space-x-3">
+                                    <div className="w-7 h-7 bg-orange-200 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                        <svg className="w-4 h-4 text-orange-800" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M10 2a1 1 0 00-1 1v1a1 1 0 002 0V3a1 1 0 00-1-1zm0 12a1 1 0 100 2 1 1 0 000-2zm1-5a1 1 0 11-2 0 1 1 0 012 0z" clipRule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 className="text-lg font-bold text-gray-800 font-sarabun mb-2">ผลกระทบระยะสั้น</h4>
+                                        <div className="space-y-2">
+                                            {data['short-term'].map((item, idx) => (
+                                                <p key={idx} className="text-lg text-gray-800 font-sarabun leading-relaxed">• {item}</p>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            {data['long-term'] && (
+                                <div className="flex items-start space-x-3">
+                                    <div className="w-7 h-7 bg-red-200 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                                        <svg className="w-4 h-4 text-red-800" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M10 2a1 1 0 00-1 1v1a1 1 0 002 0V3a1 1 0 00-1-1zm0 12a1 1 0 100 2 1 1 0 000-2zm1-5a1 1 0 11-2 0 1 1 0 012 0z" clipRule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 className="text-lg font-bold text-gray-800 font-sarabun mb-2">ผลกระทบระยะยาว</h4>
+                                        <div className="space-y-2">
+                                            {data['long-term'].map((item, idx) => (
+                                                <p key={idx} className="text-lg text-gray-800 font-sarabun leading-relaxed">• {item}</p>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                    ))}
-                </div>
-                <button className="carousel-controls prev-btn" style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.2)', border: '2px solid rgba(255,255,255,0.3)', color: 'white', borderRadius: '50%', width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '24px', fontWeight: 'bold', transition: 'all 0.3s ease', backdropFilter: 'blur(10px)', zIndex: 20, left: '20px' }} onClick={prevSlide}>
-                    ‹
-                </button>
-                <button className="carousel-controls next-btn" style={{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', background: 'rgba(255,255,255,0.2)', border: '2px solid rgba(255,255,255,0.3)', color: 'white', borderRadius: '50%', width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '24px', fontWeight: 'bold', transition: 'all 0.3s ease', backdropFilter: 'blur(10px)', zIndex: 20, right: '20px' }} onClick={nextSlide}>
-                    ›
-                </button>
-                <div className="carousel-indicators" style={{ position: 'absolute', bottom: '30px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '10px', zIndex: 20 }}>
-                    {slides.map((_, index) => (
-                        <div key={index} className="indicator" style={{ width: '12px', height: '12px', borderRadius: '50%', background: 'rgba(255,255,255,0.4)', cursor: 'pointer', transition: 'all 0.3s ease' }} onClick={() => setCurrentSlide(index)} />
-                    ))}
-                </div>
-                <div id="progressBar" className="progress-bar" style={{ position: 'absolute', bottom: '0', left: '0', height: '4px', background: 'linear-gradient(90deg, #ff6b6b, #ffa500)', transition: 'width 0.1s ease', borderRadius: '2px 2px 0 0', width: '0%' }} />
-                <div className="swipe-hint" style={{ position: 'absolute', bottom: '80px', left: '50%', transform: 'translateX(-50%)', color: 'rgba(255,255,255,0.7)', fontSize: '14px' }}>
-                    ← เลื่อนซ้าย-ขวา หรือใช้ปุ่มควบคุม →
+                    </div>
+
+                    {/* Footer Button */}
+                    <div className="p-5 pt-3 border-t border-gray-100">
+                        <button
+                            onClick={() => setSelectedTopic(null)}
+                            className="w-full bg-green-500 hover:bg-green-600 text-white py-3 px-4 rounded-lg transition-all duration-200 text-lg font-semibold font-sarabun"
+                        >
+                            ปิด
+                        </button>
+                    </div>
                 </div>
             </div>
-            <button className="close-btn" style={{ position: 'absolute', top: '20px', right: '20px', background: 'rgba(255,77,87,0.9)', color: 'white', border: 'none', width: '40px', height: '40px', borderRadius: '50%', cursor: 'pointer', fontSize: '20px', fontWeight: 'bold', transition: 'all 0.3s ease', zIndex: 30 }} onClick={onClose}>
-                ×
-            </button>
+        );
+    };
+
+    // ถ้ามี selectedTopic แสดงแค่ detail popup
+    if (selectedTopic) {
+        return renderDetailPopup(selectedTopic);
+    }
+
+    // ถ้าไม่มี selectedTopic แสดงรายการหัวข้อ
+    return (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-20 z-50 p-4">
+            <div className="bg-white rounded-xl w-80 shadow-2xl border border-gray-200 overflow-hidden">
+                {/* Header */}
+                <div className="flex justify-between items-start p-5 pb-3 border-b border-gray-100">
+                    <h3 className="text-2xl font-bold text-gray-800 font-sarabun">เกร็ดความรู้</h3>
+                    <button
+                        onClick={onClose}
+                        className="text-gray-500 hover:text-gray-700 text-2xl font-bold transition-all duration-200 p-1 rounded-full hover:bg-gray-100"
+                        aria-label="ปิดป๊อปอัพ"
+                    >
+                        ×
+                    </button>
+                </div>
+
+                {/* Description */}
+                <div className="px-5 py-3">
+                    <div className="flex items-start space-x-3">
+                        <div className="w-7 h-7 bg-blue-200 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                            <svg className="w-4 h-4 text-blue-800" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-4a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1zm0-4a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clipRule="evenodd" />
+                            </svg>
+                        </div>
+                        <p className="text-lg text-gray-800 font-sarabun leading-relaxed">คลิกที่หัวข้อเพื่อดูรายละเอียดเกี่ยวกับมลพิษทางอากาศ</p>
+                    </div>
+                </div>
+
+                {/* Scrollable Topics List */}
+                <div className="max-h-64 overflow-y-auto px-5 py-3">
+                    <div className="space-y-3">
+                        {topics.map((topic, index) => (
+                            <button
+                                key={topic.key}
+                                onClick={() => setSelectedTopic(topic.key)}
+                                className="w-full text-left text-lg text-gray-800 hover:text-blue-900 bg-gray-50 hover:bg-blue-50 font-sarabun py-3 px-4 rounded-lg border border-gray-200 hover:border-blue-300 transition-all duration-200"
+                            >
+                                <div className="flex items-start space-x-3">
+                                    <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center flex-shrink-0 mt-1 border border-gray-300">
+                                        <span className="text-sm font-semibold text-gray-700">{index + 1}</span>
+                                    </div>
+                                    <span className="leading-relaxed">{topic.title}</span>
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Footer Button */}
+                <div className="p-5 pt-3 border-t border-gray-100">
+                    <button
+                        onClick={onClose}
+                        className="w-full bg-green-500 hover:bg-green-600 text-white py-3 px-4 rounded-lg transition-all duration-200 text-lg font-semibold font-sarabun"
+                    >
+                        ปิด
+                    </button>
+                </div>
+            </div>
         </div>
     );
 };
 
-export { TRIVIA_DATA, TriviaPopupContent, PMDetailsPopupContent };
+export { TRIVIA_DATA, TriviaPopupContent };
