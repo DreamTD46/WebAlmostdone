@@ -523,7 +523,7 @@ const transformToComponentFormat = (data, locationName, dataSource = 'testing') 
       time: data.timestamp || getCurrentTime(),
       location: locationName || 'Unknown Location',
       mainReading: {
-        type: dataSource === 'testing' ? 'PC01' : 'PM0.1',
+        type: dataSource === 'testing' ? 'PC0.1' : 'PM0.1',
         value: dataSource === 'testing' ? pc01 : pm01,
         unit: dataSource === 'testing' ? 'PNC' : 'μg/m³',
         status: overallStatus
@@ -534,7 +534,7 @@ const transformToComponentFormat = (data, locationName, dataSource = 'testing') 
       },
       pmReadings: [
         {
-          type: 'PC01',
+          type: 'PC0.1',
           value: pc01,
           unit: 'PNC',
           status: pc01Status
