@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, Component } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getDatabase, ref, onValue } from 'firebase/database';
 import { initializeApp, getApps } from 'firebase/app';
@@ -8,8 +8,39 @@ import { Header, Footer } from '../../components/MonitoringInterface';
 import dynamic from 'next/dynamic';
 import { LOCATION_CONFIGS } from '../../config/firebase-configs';
 import { getAirQualityColor, PM_THRESHOLDS, determineHourlyMeanPC01Status, determinePM25Status, determinePM10Status } from '../../data/monitoring-data';
+import { isEqual } from 'lodash';
 
 const EnhancedMultiBarChart = dynamic(() => import('../../components/EnhancedMultiBarChart'), { ssr: false });
+
+// Error Boundary Component
+class ErrorBoundary extends Component {
+    state = { hasError: false, error: null };
+
+    static getDerivedStateFromError(error) {
+        return { hasError: true, error };
+    }
+
+    render() {
+        if (this.state.hasError) {
+            return (
+                <div className="w-full h-full flex items-center justify-center bg-red-50">
+                    <div className="text-center">
+                        <div className="text-red-600 text-6xl mb-4">⚠️</div>
+                        <p className="text-red-600 font-medium thai-text">เกิดข้อผิดพลาดในการแสดงผลหน้า</p>
+                        <p className="text-red-500 text-sm mt-1 english-text">{this.state.error?.message || 'Unknown error'}</p>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                        >
+                            <span className="thai-text">ลองใหม่</span>
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+        return this.props.children;
+    }
+}
 
 // Air quality status functions
 const getBarColor = (value, type) => {
@@ -72,9 +103,24 @@ export default function HistoryPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const locationId = searchParams.get('locationId');
-    const selectedLocation = locationId
-        ? LOCATION_CONFIGS[locationId] || { name: 'Cafe Amazon ST', id: 'cafe-amazon-st', firebaseConfig: LOCATION_CONFIGS['cafe-amazon-st'].firebaseConfig, testingPath: 'Cafe' }
-        : { name: 'Cafe Amazon ST', id: 'cafe-amazon-st', firebaseConfig: LOCATION_CONFIGS['cafe-amazon-st'].firebaseConfig, testingPath: 'Cafe' };
+    const selectedLocation = useMemo(() => {
+        console.log('useMemo: locationId =', locationId);
+        const loc = locationId
+            ? LOCATION_CONFIGS[locationId] || {
+                name: 'Cafe Amazon ST',
+                id: 'cafe-amazon-st',
+                firebaseConfig: LOCATION_CONFIGS['cafe-amazon-st']?.firebaseConfig,
+                testingPath: 'Cafe',
+            }
+            : {
+                name: 'Cafe Amazon ST',
+                id: 'cafe-amazon-st',
+                firebaseConfig: LOCATION_CONFIGS['cafe-amazon-st']?.firebaseConfig,
+                testingPath: 'Cafe',
+            };
+        console.log('useMemo: selectedLocation =', loc);
+        return loc;
+    }, [locationId]);
 
     const [timeFrame, setTimeFrame] = useState('Daily');
     const [pmType, setPmType] = useState('PM10');
@@ -82,6 +128,7 @@ export default function HistoryPage() {
     const [selectedData, setSelectedData] = useState(createFallbackData());
     const [loading, setLoading] = useState(true);
     const firebaseAppRef = useRef({});
+    const prevHistoricalDataRef = useRef(historicalData);
 
     const handleBackToHome = async () => {
         try {
@@ -92,7 +139,17 @@ export default function HistoryPage() {
         }
     };
 
+    const handleLocationSelect = (locationId) => {
+        console.log('handleLocationSelect: Selected location ID:', locationId);
+        router.push(`/history?locationId=${locationId}`);
+    };
+
     const getFirebaseApp = (locationConfig) => {
+        console.log('getFirebaseApp: locationConfig =', locationConfig);
+        if (!locationConfig?.id || !locationConfig?.firebaseConfig) {
+            console.error('Invalid locationConfig:', locationConfig);
+            return null;
+        }
         if (!firebaseAppRef.current[locationConfig.id]) {
             try {
                 const existingApp = getApps().find((app) => app.name === locationConfig.id);
@@ -105,15 +162,16 @@ export default function HistoryPage() {
                 }
             } catch (error) {
                 console.error('Error initializing Firebase app:', error);
-                throw error;
+                return null;
             }
         }
         return firebaseAppRef.current[locationConfig.id];
     };
 
     useEffect(() => {
-        if (!selectedLocation) {
-            console.error('No location selected');
+        console.log('useEffect: Running with selectedLocation =', selectedLocation, 'timeFrame =', timeFrame);
+        if (!selectedLocation || !selectedLocation.id) {
+            console.error('No location selected or invalid selectedLocation:', selectedLocation);
             setHistoricalData([createFallbackData()]);
             setSelectedData(createFallbackData());
             setLoading(false);
@@ -130,18 +188,26 @@ export default function HistoryPage() {
             return;
         }
 
+        let unsubscribe;
         try {
             const firebaseApp = getFirebaseApp(locationConfig);
+            if (!firebaseApp) {
+                console.error('Firebase app initialization failed for:', locationConfig.id);
+                setHistoricalData([createFallbackData()]);
+                setSelectedData(createFallbackData());
+                setLoading(false);
+                return;
+            }
             const db = getDatabase(firebaseApp);
             const today = new Date().toISOString().split('T')[0];
             const fullDataPath = `Testing/${locationConfig.testingPath}/${today}`;
             console.log('Fetching data path for', locationConfig.name, ':', fullDataPath);
             const dataRef = ref(db, fullDataPath);
 
-            const dataListener = onValue(
+            unsubscribe = onValue(
                 dataRef,
                 (snapshot) => {
-                    console.log('Raw snapshot:', snapshot.val());
+                    console.log('onValue: Raw snapshot:', snapshot.val());
                     if (snapshot.exists()) {
                         const raw = snapshot.val();
                         const timestamps = Object.keys(raw);
@@ -171,172 +237,187 @@ export default function HistoryPage() {
                                     return aTime - bTime;
                                 });
 
-                            setHistoricalData(formattedData);
-                            setSelectedData(formattedData[formattedData.length - 1] || createFallbackData());
+                            if (!isEqual(formattedData, prevHistoricalDataRef.current)) {
+                                console.log('onValue: Updating historicalData with', formattedData);
+                                setHistoricalData(formattedData);
+                                setSelectedData(formattedData[formattedData.length - 1] || createFallbackData());
+                                prevHistoricalDataRef.current = formattedData;
+                            } else {
+                                console.log('onValue: No data change, skipping state update');
+                            }
                         } else {
-                            console.log('No timestamps found for', locationConfig.name);
+                            console.log('onValue: No timestamps found for', locationConfig.name);
+                            if (!isEqual([createFallbackData()], prevHistoricalDataRef.current)) {
+                                setHistoricalData([createFallbackData()]);
+                                setSelectedData(createFallbackData());
+                                prevHistoricalDataRef.current = [createFallbackData()];
+                            }
+                        }
+                        setLoading(false);
+                    } else {
+                        console.log('onValue: No data available at path for', locationConfig.name, ':', fullDataPath);
+                        if (!isEqual([createFallbackData()], prevHistoricalDataRef.current)) {
                             setHistoricalData([createFallbackData()]);
                             setSelectedData(createFallbackData());
+                            prevHistoricalDataRef.current = [createFallbackData()];
                         }
-                    } else {
-                        console.log('No data available at path for', locationConfig.name, ':', fullDataPath);
-                        setHistoricalData([createFallbackData()]);
-                        setSelectedData(createFallbackData());
+                        setLoading(false);
                     }
-                    setLoading(false);
                 },
                 (error) => {
-                    console.error('Firebase error:', error.code, error.message);
-                    setHistoricalData([createFallbackData()]);
-                    setSelectedData(createFallbackData());
+                    console.error('onValue: Firebase error:', error.code, error.message);
+                    if (!isEqual([createFallbackData()], prevHistoricalDataRef.current)) {
+                        setHistoricalData([createFallbackData()]);
+                        setSelectedData(createFallbackData());
+                        prevHistoricalDataRef.current = [createFallbackData()];
+                    }
                     setLoading(false);
                 }
             );
-
-            return () => {
-                dataListener();
-            };
         } catch (err) {
-            console.error('Initialization error for', locationConfig.name, ':', err);
-            setHistoricalData([createFallbackData()]);
-            setSelectedData(createFallbackData());
+            console.error('useEffect: Initialization error for', locationConfig?.name, ':', err);
+            if (!isEqual([createFallbackData()], prevHistoricalDataRef.current)) {
+                setHistoricalData([createFallbackData()]);
+                setSelectedData(createFallbackData());
+                prevHistoricalDataRef.current = [createFallbackData()];
+            }
             setLoading(false);
         }
+
+        return () => {
+            console.log('useEffect: Cleaning up Firebase listener');
+            if (unsubscribe) {
+                unsubscribe();
+            }
+        };
     }, [selectedLocation, timeFrame]);
 
-    const currentDate = new Date().toLocaleString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-        timeZone: 'Asia/Bangkok',
-    });
+    const getFormattedDateTime = (timeFrame, selectedData) => {
+        if (!selectedData || !selectedData.time) {
+            const now = new Date();
+            return timeFrame === 'Daily'
+                ? now.toLocaleString('en-US', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                }).replace(/,/, '')
+                : now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) +
+                ' ' +
+                now.toLocaleString('en-US', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                }).replace(/,/, '');
+        }
+
+        const [hours, minutes] = selectedData.time.split(':');
+        const dataDate = new Date();
+        dataDate.setHours(hours, minutes, 0, 0);
+
+        if (timeFrame === 'Hourly') {
+            return `${selectedData.time} ${dataDate.toLocaleString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+            }).replace(/,/, '')}`;
+        } else if (timeFrame === 'Daily') {
+            return dataDate.toLocaleString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+            }).replace(/,/, '');
+        }
+        return selectedData.time;
+    };
 
     const selectedStatus = getSelectedStatus(selectedData, pmType);
 
     return (
-        <div className="flex flex-col min-h-screen" style={{ backgroundColor: '#FFFFFF' }}>
-            <Header selectedLocation={selectedLocation} onClick={handleBackToHome} />
-            <main className="flex-1 w-full max-w-none p-4">
-                <div className="bg-white rounded-lg shadow-sm p-6 w-full" style={{ backgroundColor: '#F0F0F0' }}>
-                    <div className="mb-6">
-                        <h2 className="text-2xl font-bold text-gray-800 mb-2">Air Quality History</h2>
-                        <p className="text-gray-600 text-sm">-ข้อมูลย้อนหลังของ {selectedLocation.name}</p>
-                    </div>
-                    <div className="flex flex-col gap-4">
-                        <div className="flex flex-col md:flex-row gap-4 items-center">
-                            <div className="bg-white rounded-lg p-3 shadow-sm w-full md:w-1/3 flex items-center justify-between border border-gray-200">
-                                <div className="text-xs text-gray-600">{selectedData ? selectedData.time : currentDate}</div>
-                                <div className="text-xl font-bold text-gray-900">
-                                    {loading ? 'Loading...' : selectedData ? selectedData[pmType === 'PC0.1' ? 'pc01' : pmType === 'PM2.5' ? 'pm25' : 'pm10'] : '0.00'}{' '}
-                                    {pmType === 'PC0.1' ? 'PNC' : 'μg/m³'}
+        <ErrorBoundary>
+            <div className="flex flex-col min-h-screen w-full" style={{ backgroundColor: '#FFFFFF' }}>
+                <Header selectedLocation={selectedLocation} onClick={handleBackToHome} />
+                <main className="flex-1 w-full max-w-none p-4">
+                    <div className="bg-white rounded-lg shadow-sm p-6 w-full" style={{ backgroundColor: '#F0F0F0' }}>
+                        <div className="mb-6">
+                            <h2 className="text-2xl font-bold english-text text-gray-800 mb-2">Air Quality History</h2>
+                            <p className="text-gray-600 text-sm thai-text">
+                                ข้อมูลย้อนหลังของ {selectedLocation?.name || 'Unknown Location'}
+                            </p>
+                        </div>
+                        <div className="flex flex-row gap-8 items-start justify-between">
+                            {/* Summary on the Left - ขยายขนาด */}
+                            <div className="bg-white rounded-lg p-3 shadow-sm w-96 flex flex-row items-stretch border border-gray-200">
+                                {/* Date/Time and Value on the left */}
+                                <div className="flex-1 flex flex-col items-center justify-center p-2">
+                                    <div className="text-sm english-text text-gray-600 mb-2">{getFormattedDateTime(timeFrame, selectedData)}</div>
+                                    <div className="text-2xl font-bold english-text text-gray-900">
+                                        {loading ? 'Loading...' : selectedData ? selectedData[pmType === 'PC0.1' ? 'pc01' : pmType === 'PM2.5' ? 'pm25' : 'pm10'] : '0.00'}
+                                    </div>
+                                    <div className="text-sm english-text text-gray-600">
+                                        {pmType === 'PC0.1' ? 'PNC' : 'μg/m³'}
+                                    </div>
                                 </div>
-                                <div className="px-3 py-1 rounded-full text-white font-semibold" style={{ backgroundColor: selectedStatus.color }}>
-                                    {loading ? 'Loading...' : selectedStatus.status}
+                                {/* Criteria (Status) on the right, full block with rounded edge */}
+                                <div className="w-1/3 flex items-center justify-center rounded-r-lg" style={{ backgroundColor: selectedStatus.color }}>
+                                    <div className="text-white font-semibold english-text text-2xl text-center p-2">
+                                        {loading ? 'Loading...' : selectedStatus.status}
+                                    </div>
                                 </div>
                             </div>
-                            <div className="flex-1 flex justify-end space-x-2">
+
+                            {/* Selection Bars on the Right */}
+                            <div className="flex flex-col gap-3 w-auto min-w-fit">
+                                <select
+                                    value={selectedLocation.id}
+                                    onChange={(e) => handleLocationSelect(e.target.value)}
+                                    className="px-3 py-2 rounded-lg font-semibold text-white focus:outline-none text-sm w-40"
+                                    style={{ backgroundColor: '#2DC653' }}
+                                >
+                                    <option value="cafe-amazon-st" className="english-text">Cafe Amazon ST</option>
+                                    <option value="building-c4" className="thai-text">อาคารวิชาการ 4</option>
+                                </select>
                                 <select
                                     value={timeFrame}
                                     onChange={(e) => setTimeFrame(e.target.value)}
-                                    className="px-4 py-2 rounded-lg font-semibold text-white focus:outline-none"
+                                    className="px-3 py-2 rounded-lg font-semibold text-white focus:outline-none text-sm w-40"
                                     style={{ backgroundColor: '#2DC653' }}
                                 >
-                                    <option value="Daily">Daily</option>
-                                    <option value="Hourly">Hourly</option>
+                                    <option value="Daily" className="english-text">Daily</option>
+                                    <option value="Hourly" className="english-text">Hourly</option>
                                 </select>
                                 <select
                                     value={pmType}
                                     onChange={(e) => setPmType(e.target.value)}
-                                    className="px-4 py-2 rounded-lg font-semibold text-white focus:outline-none"
+                                    className="px-3 py-2 rounded-lg font-semibold text-white focus:outline-none text-sm w-40"
                                     style={{ backgroundColor: '#2DC653' }}
                                 >
-                                    <option value="PC0.1">PC0.1</option>
-                                    <option value="PM2.5">PM2.5</option>
-                                    <option value="PM10">PM10</option>
+                                    <option value="PC0.1" className="english-text">PC0.1</option>
+                                    <option value="PM2.5" className="english-text">PM2.5</option>
+                                    <option value="PM10" className="english-text">PM10</option>
                                 </select>
                             </div>
                         </div>
-                        <div className="bg-white rounded-lg shadow-sm" style={{ height: '500px' }}>
+                        <div className="bg-white rounded-lg shadow-sm w-full mt-4" style={{ height: '60vh' }}>
                             {loading ? (
-                                <div className="text-center p-4">Loading data...</div>
+                                <div className="text-center p-4 thai-text">Loading data...</div>
                             ) : (
-                                <EnhancedMultiBarChart data={historicalData} pmType={pmType} getBarColor={getBarColor} onBarSelect={setSelectedData} />
+                                <EnhancedMultiBarChart
+                                    data={historicalData}
+                                    pmType={pmType}
+                                    getBarColor={getBarColor}
+                                    onBarSelect={setSelectedData}
+                                    timeFrame={timeFrame}
+                                />
                             )}
                         </div>
                     </div>
-                    <div className="mt-6 bg-white rounded-lg p-4 shadow-sm">
-                        <h3 className="font-semibold mb-3 text-gray-800">Air Quality Standards</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-5 lg:grid-cols-5 gap-4">
-                            <div className="flex items-center gap-2">
-                                <div className="w-4 h-4 rounded" style={{ backgroundColor: '#2DC653' }}></div>
-                                <div>
-                                    <div className="text-sm font-medium">Good</div>
-                                    <div className="text-xs text-gray-500">
-                                        {pmType === 'PC0.1' ? `0-${PM_THRESHOLDS.HourlyMeanPC01.Good} PNC` : pmType === 'PM10' ? `0-${PM_THRESHOLDS.PM10.Good} μg/m³` : `0-${PM_THRESHOLDS.PM.Good} μg/m³`}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className="w-4 h-4 rounded" style={{ backgroundColor: '#FECF3E' }}></div>
-                                <div>
-                                    <div className="text-sm font-medium">Warning</div>
-                                    <div className="text-xs text-gray-500">
-                                        {pmType === 'PC0.1'
-                                            ? `${PM_THRESHOLDS.HourlyMeanPC01.Good + 1}-${PM_THRESHOLDS.HourlyMeanPC01.Warning} PNC`
-                                            : pmType === 'PM10'
-                                                ? `${PM_THRESHOLDS.PM10.Good + 0.1}-${PM_THRESHOLDS.PM10.Warning} μg/m³`
-                                                : `${PM_THRESHOLDS.PM.Good + 0.1}-${PM_THRESHOLDS.PM.Warning} μg/m³`}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className="w-4 h-4 rounded" style={{ backgroundColor: '#FF9500' }}></div>
-                                <div>
-                                    <div className="text-sm font-medium">Affects health</div>
-                                    <div className="text-xs text-gray-500">
-                                        {pmType === 'PC0.1'
-                                            ? `${PM_THRESHOLDS.HourlyMeanPC01.Warning + 1}-${PM_THRESHOLDS.HourlyMeanPC01['Affects health']} PNC`
-                                            : pmType === 'PM10'
-                                                ? `${PM_THRESHOLDS.PM10.Warning + 0.1}-${PM_THRESHOLDS.PM10['Affects health']} μg/m³`
-                                                : `${PM_THRESHOLDS.PM.Warning + 0.1}-${PM_THRESHOLDS.PM['Affects health']} μg/m³`}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className="w-4 h-4 rounded" style={{ backgroundColor: '#D02224' }}></div>
-                                <div>
-                                    <div className="text-sm font-medium">Danger</div>
-                                    <div className="text-xs text-gray-500">
-                                        {pmType === 'PC0.1'
-                                            ? `${PM_THRESHOLDS.HourlyMeanPC01['Affects health'] + 1}-${PM_THRESHOLDS.HourlyMeanPC01.Danger} PNC`
-                                            : pmType === 'PM10'
-                                                ? `${PM_THRESHOLDS.PM10['Affects health'] + 0.1}-${PM_THRESHOLDS.PM10.Danger} μg/m³`
-                                                : `${PM_THRESHOLDS.PM['Affects health'] + 0.1}-${PM_THRESHOLDS.PM.Danger} μg/m³`}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className="w-4 h-4 rounded" style={{ backgroundColor: '#973AA8' }}></div>
-                                <div>
-                                    <div className="text-sm font-medium">Hazardous</div>
-                                    <div className="text-xs text-gray-500">
-                                        {pmType === 'PC0.1'
-                                            ? `${PM_THRESHOLDS.HourlyMeanPC01.Danger + 1}+ PNC`
-                                            : pmType === 'PM10'
-                                                ? `${PM_THRESHOLDS.PM10.Danger + 0.1}+ μg/m³`
-                                                : `${PM_THRESHOLDS.PM.Danger + 0.1}+ μg/m³`}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </main>
-            <Footer />
-        </div>
+                </main>
+                <Footer />
+            </div>
+        </ErrorBoundary>
     );
 }

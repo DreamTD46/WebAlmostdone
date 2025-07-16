@@ -43,9 +43,9 @@ const Header = ({ selectedLocation }) => {
             />
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-black font-montserrat">Mupcop</h1>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-black font-montserrat">VISTA</h1>
             <h2 className="text-base sm:text-lg lg:text-xl font-light text-black max-w-xl font-montserrat">
-              Multi-factor ultrafine particle optimization prediction
+              Vulnerable Indoor Sensitive Tiny Aerosol monitor
             </h2>
           </div>
         </div>
@@ -684,7 +684,7 @@ const Footer = () => (
         />
       </div>
       <div>
-        <p className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-black font-montserrat">Mupcop</p>
+        <p className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-black font-montserrat">VISTA</p>
       </div>
     </div>
   </footer>
@@ -696,7 +696,7 @@ const SimpleChevronBar = () => {
   const levels = levelKeys.map((level, index) => {
     const prevThresholds = index > 0 ? {
       pc01: PM_THRESHOLDS?.PC01?.[levelKeys[index - 1]] || 0,
-      pm25: PM_THRESHOLDS?.['PM2.5']?.[levelKeys[index - 1]] || 0, // Corrected typo from 'PM' to 'PM2.5'
+      pm25: PM_THRESHOLDS?.PM?.[levelKeys[index - 1]] || 0, // Corrected typo from 'PM' to 'PM2.5'
       pm10: PM_THRESHOLDS?.PM10?.[levelKeys[index - 1]] || 0,
     } : { pc01: 0, pm25: 0, pm10: 0 };
 
@@ -704,7 +704,7 @@ const SimpleChevronBar = () => {
       label: level,
       color: getAirQualityColor(level),
       pc01: PM_THRESHOLDS?.PC01?.[level] || 0,
-      pm25: PM_THRESHOLDS?.['PM2.5']?.[level] || 0, // Corrected typo
+      pm25: PM_THRESHOLDS?.PM?.[level] || 0, // Corrected typo
       pm10: PM_THRESHOLDS?.PM10?.[level] || 0,
       ranges: {
         pc01: {
@@ -713,7 +713,7 @@ const SimpleChevronBar = () => {
         },
         pm25: {
           min: prevThresholds.pm25,
-          max: PM_THRESHOLDS?.['PM2.5']?.[level] || Infinity, // Corrected typo
+          max: PM_THRESHOLDS?.PM?.[level] || Infinity, // Corrected typo
         },
         pm10: {
           min: prevThresholds.pm10,

@@ -1,3 +1,4 @@
+// Animation.js
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
 // Hook สำหรับตรวจสอบ prefers-reduced-motion
@@ -17,22 +18,14 @@ const useReducedMotion = () => {
     return prefersReducedMotion;
 };
 
-// Component สำหรับ Digit เดี่ยวที่มี delay - ปรับปรุงแล้ว
-const CascadeDigit = React.memo(({
-    digit,
-    className = "",
-    delay = 0,
-    animationType = "slide",
-    duration = 500,
-    onAnimationComplete
-}) => {
+// Component สำหรับ Digit เดี่ยวที่มี delay
+const CascadeDigit = React.memo(({ digit, className = "", delay = 0, animationType = "slide", duration = 500, onAnimationComplete }) => {
     const [currentDigit, setCurrentDigit] = useState(digit);
     const [isAnimating, setIsAnimating] = useState(false);
     const [shouldAnimate, setShouldAnimate] = useState(false);
     const prefersReducedMotion = useReducedMotion();
     const timeoutRefs = useRef([]);
 
-    // ทำความสะอาด timeouts เมื่อ component unmount
     useEffect(() => {
         return () => {
             timeoutRefs.current.forEach(timeout => clearTimeout(timeout));
@@ -42,23 +35,19 @@ const CascadeDigit = React.memo(({
 
     useEffect(() => {
         if (digit !== currentDigit) {
-            // ถ้า prefers reduced motion, ไม่ทำ animation
             if (prefersReducedMotion) {
                 setCurrentDigit(digit);
                 onAnimationComplete?.();
                 return;
             }
 
-            // Clear existing timeouts
             timeoutRefs.current.forEach(timeout => clearTimeout(timeout));
             timeoutRefs.current = [];
 
-            // เริ่ม animation หลังจาก delay
             const delayTimer = setTimeout(() => {
                 setShouldAnimate(true);
                 setIsAnimating(true);
 
-                // หยุด animation หลังจาก duration
                 const animationTimer = setTimeout(() => {
                     setCurrentDigit(digit);
                     setIsAnimating(false);
@@ -134,24 +123,12 @@ const CascadeDigit = React.memo(({
 
 CascadeDigit.displayName = 'CascadeDigit';
 
-// Cascade Number Component - ปรับปรุงแล้ว
-const CascadeNumber = React.memo(({
-    value,
-    decimals = 3,
-    className = "",
-    animationType = "slide",
-    direction = "left-to-right",
-    staggerDelay = 80,
-    duration = 500,
-    showChangeIndicator = false,
-    minDigits = 1,
-    theme = "default" // เพิ่ม theme support
-}) => {
+// Cascade Number Component
+const CascadeNumber = React.memo(({ value, decimals = 3, className = "", animationType = "slide", direction = "left-to-right", staggerDelay = 80, duration = 500, showChangeIndicator = false, minDigits = 1, theme = "default" }) => {
     const [trend, setTrend] = useState("stable");
     const previousValue = useRef(value);
     const prefersReducedMotion = useReducedMotion();
 
-    // ใช้ useMemo สำหรับการคำนวณที่ซับซ้อน
     const formattedParts = useMemo(() => {
         try {
             const formattedValue = Number(value).toFixed(decimals);
@@ -251,7 +228,7 @@ const CascadeNumber = React.memo(({
                     <div
                         key={part.key}
                         className="cascade-digit-wrapper"
-                        style={{ minWidth: '0.6em' }} // ใช้ minWidth เดียวกันทั้งตัวเลขและจุด
+                        style={{ minWidth: '0.6em' }}
                     >
                         {part.digit === '.' ? (
                             <span className="font-numbers">.</span>
@@ -264,11 +241,10 @@ const CascadeNumber = React.memo(({
                                 duration={duration}
                             />
                         )}
-                </div>
+                    </div>
                 ))}
             </div>
 
-            {/* Enhanced Change Indicator */}
             {showChangeIndicator && trend !== "stable" && (
                 <span
                     className={trendStyles.className}
@@ -288,14 +264,8 @@ const CascadeNumber = React.memo(({
 
 CascadeNumber.displayName = 'CascadeNumber';
 
-// Wave Effect Number Component - ปรับปรุงแล้ว
-const WaveNumber = React.memo(({
-    value,
-    decimals = 3,
-    className = "",
-    waveDelay = 60,
-    duration = 600
-}) => {
+// Wave Effect Number Component
+const WaveNumber = React.memo(({ value, decimals = 3, className = "", waveDelay = 60, duration = 600 }) => {
     const [displayDigits, setDisplayDigits] = useState([]);
     const [isWaving, setIsWaving] = useState(false);
     const previousValue = useRef(value);
@@ -318,7 +288,6 @@ const WaveNumber = React.memo(({
             if (previousValue.current !== value) {
                 setIsWaving(true);
 
-                // Clear existing timeouts
                 timeoutRefs.current.forEach(timeout => clearTimeout(timeout));
                 timeoutRefs.current = [];
 
@@ -326,7 +295,6 @@ const WaveNumber = React.memo(({
                     setDisplayDigits(newDigits.map(digit => ({ digit, isNew: false })));
                     setIsWaving(false);
                 } else {
-                    // Wave animation
                     newDigits.forEach((digit, index) => {
                         const timeout = setTimeout(() => {
                             setDisplayDigits(prev => {
@@ -343,7 +311,6 @@ const WaveNumber = React.memo(({
                         timeoutRefs.current.push(timeout);
                     });
 
-                    // Reset wave state
                     const resetTimeout = setTimeout(() => {
                         setIsWaving(false);
                         setDisplayDigits(newDigits.map(digit => ({ digit, isNew: false })));
@@ -395,14 +362,8 @@ const WaveNumber = React.memo(({
 
 WaveNumber.displayName = 'WaveNumber';
 
-// Smooth Ripple Effect - ปรับปรุงแล้ว
-const RippleNumber = React.memo(({
-    value,
-    decimals = 3,
-    className = "",
-    rippleDelay = 50,
-    duration = 800
-}) => {
+// Smooth Ripple Effect
+const RippleNumber = React.memo(({ value, decimals = 3, className = "", rippleDelay = 50, duration = 800 }) => {
     const [animatingDigits, setAnimatingDigits] = useState(new Set());
     const previousValue = useRef(value);
     const prefersReducedMotion = useReducedMotion();
@@ -422,7 +383,6 @@ const RippleNumber = React.memo(({
                 const [integerPart, decimalPart] = formattedValue.split('.');
                 const allDigits = [...integerPart.split(''), '.', ...decimalPart.split('')];
 
-                // Clear existing timeouts
                 timeoutRefs.current.forEach(timeout => clearTimeout(timeout));
                 timeoutRefs.current = [];
 
@@ -431,7 +391,6 @@ const RippleNumber = React.memo(({
                     return;
                 }
 
-                // Ripple effect จากกลางออกไปข้าง
                 const center = Math.floor(allDigits.length / 2);
 
                 allDigits.forEach((_, index) => {
@@ -441,7 +400,6 @@ const RippleNumber = React.memo(({
                     const startTimeout = setTimeout(() => {
                         setAnimatingDigits(prev => new Set([...prev, index]));
 
-                        // Remove from animating set after animation
                         const endTimeout = setTimeout(() => {
                             setAnimatingDigits(prev => {
                                 const newSet = new Set(prev);
@@ -510,20 +468,8 @@ const RippleNumber = React.memo(({
 
 RippleNumber.displayName = 'RippleNumber';
 
-// Updated LiveActivityNumber with enhanced features
-const LiveActivityNumber = React.memo(({
-    value,
-    type = "cascade-slide",
-    decimals = 3,
-    className = "",
-    showChangeIndicator = true,
-    minDigits = 1,
-    direction = "right-to-left",
-    theme = "default",
-    onValueChange,
-    errorFallback = "---"
-}) => {
-    // Error boundary สำหรับ invalid values
+// Updated LiveActivityNumber
+const LiveActivityNumber = React.memo(({ value, type = "cascade-slide", decimals = 3, className = "", showChangeIndicator = true, minDigits = 1, direction = "right-to-left", theme = "default", onValueChange, errorFallback = "---" }) => {
     const safeValue = useMemo(() => {
         if (typeof value !== 'number' || !isFinite(value)) {
             console.warn('LiveActivityNumber: Invalid value provided, using fallback');
