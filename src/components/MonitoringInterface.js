@@ -350,48 +350,53 @@ const MonitoringPanel = ({ selectedLocation, onLocationClear }) => {
         <div
           className="pt-2 sm:pt-3 mt-2 sm:mt-3"
           style={{
-            borderTop: '1px solid #e5e5e5'
+            borderTop: '1px solid #e5e5e5',
           }}
         >
           <div className="text-center">
-            <div className="flex justify-center items-center gap-3 sm:gap-4 p-1 flex-wrap">
-              {(data.recommendations || []).slice(0, 5).map((recommendation, index) => {
-                const iconPath = getRecommendationIcon(recommendation);
-                const isImageIcon = typeof iconPath === 'string' && iconPath.startsWith('/assets/images/');
+            {!data.recommendations || data.recommendations.length === 0 ? (
+              <div className="text-xs sm:text-sm lg:text-base text-gray-500 mt-3 font-sarabun">
+                ไม่มีคำแนะนำ
+              </div>
+            ) : (
+              <>
+                <div className="flex justify-center items-center gap-3 sm:gap-4 p-1 flex-nowrap overflow-x-auto">
+                  {data.recommendations.map((recommendation, index) => {
+                    const iconPath = getRecommendationIcon(recommendation);
+                    const isImageIcon = typeof iconPath === 'string' && iconPath.match(/\.(png|jpg|jpeg|svg|gif)$/i);
 
-                return (
-                  <div key={index} className="flex flex-col items-center">
-                    <div
-                      className="p-1 rounded-lg"
-                      style={{
-                        background: '#f8f8f8',
-                        boxShadow: 'inset 2px 2px 4px #e0e0e0, inset -2px -2px 4px #ffffff'
-                      }}
-                    >
-                      {isImageIcon ? (
-                        <img
-                          src={iconPath}
-                          alt=""
-                          className="w-4 h-4 sm:w-6 sm:h-6 lg:w-7 lg:h-7"
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                            e.target.nextSibling.style.display = 'inline';
+                    return (
+                      <div key={index} className="flex flex-col items-center">
+                        <div
+                          className="p-1 rounded-lg"
+                          style={{
+                            background: '#f8f8f8',
+                            boxShadow: 'inset 2px 2px 4px #e0e0e0, inset -2px -2px 4px #ffffff',
                           }}
-                        />
-                      ) : (
-                        <span className="text-sm sm:text-base lg:text-lg">{iconPath}</span>
-                      )}
-                      {isImageIcon && (
-                        <span style={{ display: 'none' }} className="text-sm sm:text-base lg:text-lg">•</span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="text-xs sm:text-sm lg:text-base text-gray-500 mt-3 font-sarabun">
-              คลิกที่ bubble สีด้านบนเพื่อดูคำแนะนำสำหรับแต่ละกลุ่ม
-            </div>
+                        >
+                          {isImageIcon ? (
+                            <img
+                              src={iconPath || '/assets/images/fallback-icon.png'}
+                              alt={recommendation.name || 'Recommendation icon'}
+                              className="w-4 h-4 sm:w-6 sm:h-6 lg:w-7 lg:h-7"
+                              onError={(e) => {
+                                console.error(`Failed to load image: ${iconPath}`);
+                                e.target.src = '/assets/images/fallback-icon.png';
+                              }}
+                            />
+                          ) : (
+                            <span className="text-sm sm:text-base lg:text-lg">{iconPath || 'N/A'}</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="text-xs sm:text-sm lg:text-base text-gray-500 mt-3 font-sarabun">
+                  คลิกที่ Bubble ด้านบนเพื่อดูคำแนะนำสำหรับแต่ละกลุ่ม
+                </div>
+              </>
+            )}
           </div>
         </div>
 
