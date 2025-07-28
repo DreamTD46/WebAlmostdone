@@ -40,7 +40,7 @@ export default function Home() {
           </div>
           {/* History Data */}
           <div className="bg-white flex-1">
-            <div className="p-3 h-full">
+            <div className="h-full">
               <HistoryData selectedLocation={selectedLocation} />
             </div>
           </div>

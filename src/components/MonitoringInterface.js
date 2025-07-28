@@ -58,6 +58,7 @@ const AppContainer = ({ children }) => {
 //       </div>
 // Header Component
 
+
 const Header = ({ selectedLocation }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -240,12 +241,12 @@ const MonitoringPanel = ({ selectedLocation, onLocationClear }) => {
 
   return (
     <div className="flex-1 bg-white p-3 sm:p-4">
-      <div className="flex items-center justify-between mb-3 sm:mb-4">
+      <div className="flex items-center justify-between mb-4 sm:mb-5">
         <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-light text-black font-montserrat">UFPs Monitoring</h2>
       </div>
 
       <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-gray-100 mb-3 sm:mb-4">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse" />
             <span className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-semibold text-black font-montserrat">LIVE</span>
@@ -428,8 +429,8 @@ const MonitoringPanel = ({ selectedLocation, onLocationClear }) => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg p-2 sm:p-3 shadow-sm border border-gray-100 mb-2 sm:mb-3">
-          <h3 className="text-base sm:text-lg lg:text-xl xl:text-2xl font-medium text-gray-800 mb-2 sm:mb-3 font-sarabun">ข้อมูลมลพิษทางอากาศ</h3>
+        <div className="bg-white rounded-lg p-2 sm:p-3 shadow-sm border border-gray-100 mb-3 sm:mb-4">
+          <h3 className="text-base sm:text-lg lg:text-xl xl:text-2xl font-medium text-gray-800 mb-3 sm:mb-4 font-sarabun">ข้อมูลมลพิษทางอากาศ</h3>
           <div className="grid grid-cols-2 gap-1 sm:gap-2">
             {isDataValid ? (
               (() => {
@@ -663,7 +664,7 @@ const MonitoringPanel = ({ selectedLocation, onLocationClear }) => {
 // MapSection Component
 const MapSection = ({ selectedLocation, onLocationSelect }) => {
   return (
-    <div className="flex-1 p-4 h-full bg-white overflow-auto">
+    <div className="flex-1 p-4 h-full bg-white">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-base sm:text-lg lg:text-xl xl:text-2xl font-medium text-gray-800 mb-2 sm:mb-3 font-sarabun">แผนที่ตำแหน่งตรวจวัด</h2>
         <div className="text-sm text-gray-500 font-sarabun">
@@ -671,7 +672,7 @@ const MapSection = ({ selectedLocation, onLocationSelect }) => {
         </div>
       </div>
 
-      <div className="w-full h-full bg-gray-100 rounded-lg border border-gray-200 overflow-hidden">
+      <div className="w-full h-[calc(100%-60px)] bg-gray-100 rounded-lg border border-gray-200 overflow-hidden">
         <MapComponentWrapper onLocationSelect={onLocationSelect} />
       </div>
     </div>
