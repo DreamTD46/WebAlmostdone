@@ -19,7 +19,6 @@ export default function Home() {
   return (
     <div className="bg-gray-50 min-h-screen flex flex-col">
       <Header selectedLocation={selectedLocation} />
-
       <main className="flex flex-col lg:flex-row flex-1">
         {/* Left Panel */}
         <div className="w-full lg:w-2/5 bg-white border-r border-gray-200 flex-1">
@@ -30,17 +29,15 @@ export default function Home() {
             />
           </div>
         </div>
-
         {/* Right Panel */}
         <div className="w-full lg:w-3/5 flex flex-col flex-1">
           {/* Map Section */}
-          <div className="bg-white border-b border-gray-200 flex-1 min-h-[450px]">
+          <div className="bg-white border-b border-gray-200 flex-1">
             <MapSection
               selectedLocation={selectedLocation}
               onLocationSelect={handleLocationSelect}
             />
           </div>
-
           {/* History Data */}
           <div className="bg-white flex-1">
             <div className="p-3 h-full">
@@ -49,7 +46,6 @@ export default function Home() {
           </div>
         </div>
       </main>
-
       <Footer />
     </div>
   );

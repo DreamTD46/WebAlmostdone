@@ -25,47 +25,77 @@ import { TriviaPopupContent } from '../data/trivia';
 import './MapComponents';
 import HistoryData from './HistoryData';
 
+// Main App Container
+const AppContainer = ({ children }) => {
+  return (
+    <div className="flex flex-col min-h-screen">
+      {children}
+    </div>
+  );
+};
+
+// const Header = ({ selectedLocation }) => {
+//   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+//   return (
+//     <header className="sticky top-0 z-50 min-h-[3rem] bg-gradient-to-r from-green-100 to-green-300 border-b-2 border-gray-200 flex-shrink-0 flex items-center justify-between px-3 sm:px-4 overflow-hidden">
+//       <div className="flex items-center gap-3 sm:gap-4">
+//         <div className="w-32 h-32 flex-shrink-0 flex items-center justify-center overflow-hidden">
+//           <img
+//             src="/assets/images/Vista.png"
+//             alt="Vista logo"
+//             className="w-32 h-32 object-contain"
+//             width={128}
+//             height={128}
+//           />
+//         </div>
+//         <div>
+//           {/* <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-black font-montserrat">VISTA</h1>
+//           <h2 className="text-sm sm:text-base lg:text-lg font-light text-black max-w-xl font-montserrat">
+//             Vulnerable Indoor Sensitive Tiny Aerosol monitor
+//           </h2> */}
+//         </div>
+//       </div>
 // Header Component
+
 const Header = ({ selectedLocation }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 h-18 sm:h-20 bg-gradient-to-r from-green-100 to-green-300 border-b-2 border-gray-200 flex-shrink-0">
-      <div className="h-full flex items-center justify-between px-4 sm:px-6">
-        <div className="flex items-center gap-4 sm:gap-6">
-          <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 flex items-center justify-center">
-            <img
-              src="/assets/images/Vista.png"
-              alt=" logo"
-              className="w-20 h-20 sm:w-24 sm:h-24 object-contain"
-              width={96}
-              height={96}
-            />
-          </div>
-          <div>
-            {/* <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-black font-montserrat">VISTA</h1>
-            <h2 className="text-base sm:text-lg lg:text-xl font-light text-black max-w-xl font-montserrat">
-              Vulnerable Indoor Sensitive Tiny Aerosol monitor
-            </h2> */}
-          </div>
+    <header className="sticky top-0 z-50 min-h-[5rem] max-h-[5rem] bg-gradient-to-r from-green-100 to-green-300 border-b-2 border-gray-200 flex-shrink-0 flex items-center justify-between px-3 sm:px-4 overflow-hidden">
+      <div className="flex items-center gap-3 sm:gap-4">
+        <div className="w-32 h-32 flex-shrink-0 flex items-center justify-center overflow-hidden">
+          <img
+            src="/assets/images/Vista.png"
+            alt="Vista logo"
+            className="max-w-full max-h-full object-contain"
+            width={128}
+            height={128}
+          />
         </div>
-
-        <nav className="hidden sm:flex items-center gap-4 sm:gap-6">
-          <Link href="/" className="px-4 py-2 text-lg sm:text-xl lg:text-2xl font-semibold text-black rounded-lg hover:bg-green-200 transition-colors font-montserrat">
-            Air quality
-          </Link>
-          <Link href="/history" className="px-4 py-2 text-lg sm:text-xl lg:text-2xl font-semibold text-black rounded-lg hover:bg-green-200 transition-colors font-montserrat">
-            History Data
-          </Link>
-        </nav>
-
-        <button
-          className="sm:hidden"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-        >
-          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        <div className="flex flex-col justify-center">
+          <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-black font-montserrat">VISTA</h1>
+          <h2 className="text-sm sm:text-base lg:text-lg font-light text-black max-w-xl font-montserrat">
+            Vulnerable Indoor Sensitive Tiny Aerosol monitor
+          </h2>
+        </div>
       </div>
+
+      <nav className="hidden sm:flex items-center gap-3 sm:gap-4">
+        <Link href="/" className="px-3 py-1 text-base sm:text-lg lg:text-xl font-semibold text-black rounded-lg hover:bg-green-200 transition-colors font-montserrat">
+          Air quality
+        </Link>
+        <Link href="/history" className="px-3 py-1 text-base sm:text-lg lg:text-xl font-semibold text-black rounded-lg hover:bg-green-200 transition-colors font-montserrat">
+          History Data
+        </Link>
+      </nav>
+
+      <button
+        className="sm:hidden"
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
+      >
+        {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+      </button>
     </header>
   );
 };
@@ -209,11 +239,9 @@ const MonitoringPanel = ({ selectedLocation, onLocationClear }) => {
   }
 
   return (
-    <div className="w-full bg-white">
-      <div className="p-3 sm:p-4">
-        <div className="flex items-center justify-between mb-3 sm:mb-4">
-          <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-light text-black font-montserrat">UFPs Monitoring</h2>
-        </div>
+    <div className="flex-1 bg-white p-3 sm:p-4">
+      <div className="flex items-center justify-between mb-3 sm:mb-4">
+        <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-light text-black font-montserrat">UFPs Monitoring</h2>
       </div>
 
       <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-gray-100 mb-3 sm:mb-4">
@@ -635,7 +663,7 @@ const MonitoringPanel = ({ selectedLocation, onLocationClear }) => {
 // MapSection Component
 const MapSection = ({ selectedLocation, onLocationSelect }) => {
   return (
-    <div className="flex-1 p-4 h-full bg-white">
+    <div className="flex-1 p-4 h-full bg-white overflow-auto">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-base sm:text-lg lg:text-xl xl:text-2xl font-medium text-gray-800 mb-2 sm:mb-3 font-sarabun">แผนที่ตำแหน่งตรวจวัด</h2>
         <div className="text-sm text-gray-500 font-sarabun">
@@ -643,7 +671,7 @@ const MapSection = ({ selectedLocation, onLocationSelect }) => {
         </div>
       </div>
 
-      <div className="w-full h-[calc(100%-60px)] bg-gray-100 rounded-lg border border-gray-200 overflow-hidden">
+      <div className="w-full h-full bg-gray-100 rounded-lg border border-gray-200 overflow-hidden">
         <MapComponentWrapper onLocationSelect={onLocationSelect} />
       </div>
     </div>
@@ -657,6 +685,9 @@ const MapComponentWrapper = ({ onLocationSelect }) => {
   useEffect(() => {
     import('./MapComponents').then((module) => {
       setMapComponents(() => module.default);
+      console.log('MapComponents loaded successfully');
+    }).catch((error) => {
+      console.error('Failed to load MapComponents:', error);
     });
   }, []);
 
@@ -673,7 +704,6 @@ const MapComponentWrapper = ({ onLocationSelect }) => {
 
   return <MapComponents onLocationSelect={onLocationSelect} />;
 };
-
 
 // SimpleChevronBar Component
 const SimpleChevronBar = () => {
@@ -815,7 +845,6 @@ const SimpleChevronBar = () => {
               <div className="text-lg text-gray-600 font-sarabun">
                 <strong>PM10:</strong> {formatRange(selectedLevel.ranges.pm10.min, selectedLevel.ranges.pm10.max, 'μg/m³')}
               </div>
-              
             </div>
             <div className="mt-8">
               <button onClick={closePopup} className="w-full bg-green-500 hover:bg-green-600 text-white py-4 px-6 rounded-lg transition-colors text-xl font-medium font-sarabun">
@@ -865,26 +894,33 @@ const TriviaCard = ({ onTriviaClick }) => {
 
 // Footer Component
 const Footer = () => (
-  <footer className="h-18 sm:h-20 bg-gradient-to-r from-green-100 to-green-300 border-b-2 border-gray-200 flex-shrink-0 flex items-center justify-between p-4 sm:p-6">
-    <span className="text-base sm:text-lg lg:text-xl xl:text-2xl text-black font-montserrat">© 2025 Jaejae Dream Yok. All rights reserved.</span>
-    <div className="flex items-center gap-4 sm:gap-6">
-      <div className="flex-shrink-0 flex items-center justify-center">
-        <img
-          src="/assets/images/Vista.png"
-          alt="Vista logo"
-          className="w-20 h-20 sm:w-24 sm:h-24 object-contain"
-          width={96}
-          height={96}
-        />
-      </div>
-      {/* <div>
-        <p className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-black font-montserrat">VISTA</p>
-      </div> */}
+  <footer className="min-h-[5rem] max-h-[5rem] bg-gradient-to-r from-green-100 to-green-300 border-t-2 border-gray-200 flex-shrink-0 flex items-center justify-between px-3 sm:px-4 overflow-hidden">
+    <span className="text-sm sm:text-base lg:text-lg text-black font-montserrat">
+      © 2025 Jaejae Dream Yok. All rights reserved.
+    </span>
+    <div className="w-32 h-full flex-shrink-0 flex items-center justify-center overflow-hidden">
+      <img
+        src="/assets/images/Vista.png"
+        alt="Vista logo"
+        className="max-w-full max-h-full object-contain"
+        width={128}
+        height={128}
+      />
     </div>
   </footer>
 );
 
-// Export all components
+// Example Usage
+const MonitoringInterface = () => {
+  return (
+    <AppContainer>
+      <Header />
+      <MonitoringPanel />
+      <Footer />
+    </AppContainer>
+  );
+};
+
 export {
   Header,
   MonitoringPanel,
@@ -893,4 +929,5 @@ export {
   TriviaCard,
   Footer,
   HistoryData,
+  MonitoringInterface,
 };

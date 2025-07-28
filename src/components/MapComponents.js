@@ -295,14 +295,14 @@ const MapComponents = ({ onLocationSelect }) => {
       searchControl.onAdd = function () {
         const div = window.L.DomUtil.create('div', 'leaflet-control leaflet-bar')
         div.innerHTML = `
-				<div class="p-2 bg-white rounded-lg shadow-lg" style="min-width: 200px;">
+				<div class="p-2 bg-white text-black rounded-lg shadow-lg" style="min-width: 200px;">
 					<input 
 						type="text" 
 						id="searchInput" 
 						placeholder="ค้นหาสถานที่..." 
-						class="w-full px-2 py-1 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+						class="w-full px-2 py-1 text-sm border text-black border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
 					/>
-					<div id="searchResults" class="mt-1 max-h-40 overflow-y-auto bg-white rounded-lg"></div>
+					<div id="searchResults" class="mt-1 max-h-40 overflow-y-auto bg-white text-black rounded-lg"></div>
 				</div>
 			`
         return div
