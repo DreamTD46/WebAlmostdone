@@ -17,13 +17,13 @@ export default function Home() {
   };
 
   return (
-    <div className="bg-gray-50">
-      <Header />
+    <div className="bg-gray-50 min-h-screen flex flex-col">
+      <Header selectedLocation={selectedLocation} />
 
-      <main className="flex flex-col lg:flex-row">
-        {/* Left Panel - ให้มีขนาดที่เหมาะสม */}
-        <div className="w-full lg:w-3/5 bg-white border-r border-gray-200">
-          <div className="p-3">
+      <main className="flex flex-col lg:flex-row flex-1">
+        {/* Left Panel */}
+        <div className="w-full lg:w-2/5 bg-white border-r border-gray-200 flex-1">
+          <div className="p-3 h-full">
             <MonitoringPanel
               selectedLocation={selectedLocation}
               onLocationClear={handleLocationClear}
@@ -31,19 +31,19 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Right Panel - จัดเป็น column แนวตั้ง */}
-        <div className="w-full lg:w-3/5 flex flex-col">
-          {/* Map Section - ให้มีความสูงที่เหมาะสม */}
-          <div className="bg-white border-b border-gray-200 h-[450px]">
+        {/* Right Panel */}
+        <div className="w-full lg:w-3/5 flex flex-col flex-1">
+          {/* Map Section */}
+          <div className="bg-white border-b border-gray-200 flex-1 min-h-[450px]">
             <MapSection
               selectedLocation={selectedLocation}
               onLocationSelect={handleLocationSelect}
             />
           </div>
 
-          {/* History Data - ให้ขยายตามเนื้อหา */}
-          <div className="bg-white">
-            <div className="p-3">
+          {/* History Data */}
+          <div className="bg-white flex-1">
+            <div className="p-3 h-full">
               <HistoryData selectedLocation={selectedLocation} />
             </div>
           </div>

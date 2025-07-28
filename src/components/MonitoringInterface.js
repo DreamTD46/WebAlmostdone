@@ -35,18 +35,18 @@ const Header = ({ selectedLocation }) => {
         <div className="flex items-center gap-4 sm:gap-6">
           <div className="w-20 h-20 sm:w-24 sm:h-24 flex-shrink-0 flex items-center justify-center">
             <img
-              src="/assets/images/logo.png"
-              alt="Mupcop logo"
+              src="/assets/images/Vista.png"
+              alt=" logo"
               className="w-20 h-20 sm:w-24 sm:h-24 object-contain"
               width={96}
               height={96}
             />
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-black font-montserrat">VISTA</h1>
+            {/* <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-black font-montserrat">VISTA</h1>
             <h2 className="text-base sm:text-lg lg:text-xl font-light text-black max-w-xl font-montserrat">
               Vulnerable Indoor Sensitive Tiny Aerosol monitor
-            </h2>
+            </h2> */}
           </div>
         </div>
 
@@ -674,26 +674,6 @@ const MapComponentWrapper = ({ onLocationSelect }) => {
   return <MapComponents onLocationSelect={onLocationSelect} />;
 };
 
-// Footer Component
-const Footer = () => (
-  <footer className="h-18 sm:h-20 bg-gradient-to-r from-green-100 to-green-300 border-b-2 border-gray-200 flex-shrink-0 flex items-center justify-between p-4 sm:p-6">
-    <span className="text-base sm:text-lg lg:text-xl xl:text-2xl text-black font-montserrat">© 2025 Jaejae Dream Yok. All rights reserved.</span>
-    <div className="flex items-center gap-4 sm:gap-6">
-      <div className="flex-shrink-0 flex items-center justify-center">
-        <img
-          src="/assets/images/logo.png"
-          alt="Mupcop logo"
-          className="w-20 h-20 sm:w-24 sm:h-24 object-contain"
-          width={96}
-          height={96}
-        />
-      </div>
-      <div>
-        <p className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-black font-montserrat">VISTA</p>
-      </div>
-    </div>
-  </footer>
-);
 
 // SimpleChevronBar Component
 const SimpleChevronBar = () => {
@@ -882,6 +862,27 @@ const TriviaCard = ({ onTriviaClick }) => {
     </div>
   );
 };
+
+// Footer Component
+const Footer = () => (
+  <footer className="h-18 sm:h-20 bg-gradient-to-r from-green-100 to-green-300 border-b-2 border-gray-200 flex-shrink-0 flex items-center justify-between p-4 sm:p-6">
+    <span className="text-base sm:text-lg lg:text-xl xl:text-2xl text-black font-montserrat">© 2025 Jaejae Dream Yok. All rights reserved.</span>
+    <div className="flex items-center gap-4 sm:gap-6">
+      <div className="flex-shrink-0 flex items-center justify-center">
+        <img
+          src="/assets/images/Vista.png"
+          alt="Vista logo"
+          className="w-20 h-20 sm:w-24 sm:h-24 object-contain"
+          width={96}
+          height={96}
+        />
+      </div>
+      {/* <div>
+        <p className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-black font-montserrat">VISTA</p>
+      </div> */}
+    </div>
+  </footer>
+);
 
 // Export all components
 export {
