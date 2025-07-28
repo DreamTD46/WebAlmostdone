@@ -389,13 +389,13 @@ const MonitoringPanel = ({ selectedLocation, onLocationClear }) => {
               </div>
             ) : (
               <>
-                <div className="flex justify-center items-center gap-3 sm:gap-4 p-1 flex-nowrap overflow-x-auto">
+                <div className="flex justify-center items-center gap-3 sm:gap-4 p-1 flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100" style={{ maxWidth: '100%', paddingBottom: '8px' }}>
                   {data.recommendations.map((recommendation, index) => {
                     const iconPath = getRecommendationIcon(recommendation);
                     const isImageIcon = typeof iconPath === 'string' && iconPath.match(/\.(png|jpg|jpeg|svg|gif)$/i);
 
                     return (
-                      <div key={index} className="flex flex-col items-center">
+                      <div key={index} className="flex flex-col items-center min-w-[48px] sm:min-w-[56px]">
                         <div
                           className="p-1 rounded-lg"
                           style={{
@@ -407,7 +407,7 @@ const MonitoringPanel = ({ selectedLocation, onLocationClear }) => {
                             <img
                               src={iconPath || '/assets/images/fallback-icon.png'}
                               alt={recommendation.name || 'Recommendation icon'}
-                              className="w-4 h-4 sm:w-6 sm:h-6 lg:w-7 lg:h-7"
+                              className="w-6 h-6 sm:w-6 sm:h-8 lg:w-9 lg:h-9 object-contain"
                               onError={(e) => {
                                 console.error(`Failed to load image: ${iconPath}`);
                                 e.target.src = '/assets/images/fallback-icon.png';
@@ -429,7 +429,7 @@ const MonitoringPanel = ({ selectedLocation, onLocationClear }) => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg p-2 sm:p-3 shadow-sm border border-gray-100 mb-3 sm:mb-4">
+        <div className="bg-white rounded-lg p-3 sm:p-4 shadow-sm border border-gray-100 mb-3 sm:mb-4">
           <h3 className="text-base sm:text-lg lg:text-xl xl:text-2xl font-medium text-gray-800 mb-3 sm:mb-4 font-sarabun">ข้อมูลมลพิษทางอากาศ</h3>
           <div className="grid grid-cols-2 gap-1 sm:gap-2">
             {isDataValid ? (
@@ -665,8 +665,8 @@ const MonitoringPanel = ({ selectedLocation, onLocationClear }) => {
 const MapSection = ({ selectedLocation, onLocationSelect }) => {
   return (
     <div className="flex-1 p-4 h-full bg-white">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-base sm:text-lg lg:text-xl xl:text-2xl font-medium text-gray-800 mb-2 sm:mb-3 font-sarabun">แผนที่ตำแหน่งตรวจวัด</h2>
+      <div className="flex items-center justify-between mb-1">
+        <h2 className="text-base sm:text-lg lg:text-xl xl:text-2xl font-medium text-gray-800 mb-1 sm:mb-2 font-sarabun">แผนที่ตำแหน่งตรวจวัด</h2>
         <div className="text-sm text-gray-500 font-sarabun">
           คลิกที่หมุดเพื่อดูข้อมูล
         </div>
