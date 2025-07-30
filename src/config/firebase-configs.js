@@ -39,7 +39,8 @@ export const LOCATION_CONFIGS = {
     },
     'building-c4': {
         id: 'building-c4',
-        name: 'อาคารวิชาการ 4',
+        // name: 'อาคารวิชาการ 4',
+        name: 'มหาวิทยาลัยสงขลานครินทร์',
         coords: [8.638222, 99.897976],
         firebaseConfig: C4_FIREBASE_CONFIG,
         // C4 ใช้ RAWdata สำหรับทั้ง PM และ อุณหภูมิ/ความชื้น

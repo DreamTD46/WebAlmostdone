@@ -378,7 +378,7 @@ export default function HistoryPage() {
                                     style={{ backgroundColor: '#2DC653' }}
                                 >
                                     <option value="cafe-amazon-st" className="english-text">Cafe Amazon ST</option>
-                                    <option value="building-c4" className="thai-text">อาคารวิชาการ 4</option>
+                                    <option value="building-c4" className="thai-text">มหาวิทยาลัยสงขลานครินทร์</option>
                                 </select>
                                 <select
                                     value={timeFrame}

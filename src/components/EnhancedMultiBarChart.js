@@ -74,7 +74,7 @@ const EnhancedMultiBarChart = ({ data: initialData, pmType, getBarColor, onBarSe
 
     const displayedData = useMemo(() => {
         if (!initialData?.length) return [];
-        const maxBars = 28;
+        const maxBars = 26; // Changed from 28 to 26
         console.log('Initial Data length:', initialData.length, 'timeFrame:', timeFrame, 'maxValue:', Math.max(...initialData.map(item => parseFloat(item[pmType === 'PC0.1' ? 'pc01' : pmType === 'PM2.5' ? 'pm25' : 'pm10'] || 0))));
         return initialData.length > maxBars ? initialData.slice(-maxBars) : initialData;
     }, [initialData, timeFrame, pmType]);
@@ -110,10 +110,10 @@ const EnhancedMultiBarChart = ({ data: initialData, pmType, getBarColor, onBarSe
 
     const barWidth = Math.min(
         maxBarWidth,
-        Math.max(minBarWidth, Math.floor((chartDimensions.width - CHART_PADDING.right) / Math.min(displayedData.length, 28)) - minBarSpacing)
+        Math.max(minBarWidth, Math.floor((chartDimensions.width - CHART_PADDING.right) / Math.min(displayedData.length, 26)) - minBarSpacing)
     );
     const barSpacing = Math.max(minBarSpacing, Math.floor(barWidth * 0.2));
-    const totalChartWidth = Math.min(displayedData.length, 28) * (barWidth + barSpacing) - barSpacing;
+    const totalChartWidth = Math.min(displayedData.length, 26) * (barWidth + barSpacing) - barSpacing;
 
     const containerWidth = chartDimensions.width || Math.max(
         chartRef.current?.parentElement.clientWidth || 800,
@@ -305,7 +305,7 @@ const EnhancedMultiBarChart = ({ data: initialData, pmType, getBarColor, onBarSe
                     }}
                 >
                     <div ref={barsRef} className="flex items-end absolute bottom-0" style={{ left: `${offsetX}px` }}>
-                        {displayedData.slice(0, 28).map((item, index) => {
+                        {displayedData.slice(0, 26).map((item, index) => {
                             const value = parseFloat(item[pmType === 'PC0.1' ? 'pc01' : pmType === 'PM2.5' ? 'pm25' : 'pm10'] || 0);
                             return (
                                 <div
@@ -336,7 +336,7 @@ const EnhancedMultiBarChart = ({ data: initialData, pmType, getBarColor, onBarSe
                         height: '40px'
                     }}
                 >
-                    {displayedData.slice(0, 28).map((item, index) => (
+                    {displayedData.slice(0, 26).map((item, index) => (
                         <div
                             key={`label-${index}`}
                             className="text-center"
