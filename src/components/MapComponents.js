@@ -4,8 +4,8 @@ import { LOCATION_CONFIGS } from '../config/firebase-configs'
 
 // ตัวอย่างค่าคงที่สำหรับพิกัดและการตั้งค่าแผนที่
 const WALAILAK_COORDS = [8.64437496101933, 99.89929488155569] //ใส่พิกัดละติจูตและลองจิจูตของ Cafe Amazon สาขา ST
-// const WALAILAK_C4 = [8.638222, 99.897976] //ใส่พิกัดละติจูตและลองจิจูตของอาคารวิชาการ 4
-const WALAILAK_C4 = [7.007035606988076, 100.50128332387776] //ใส่พิกัดละติจูตและลองจิจูตของ มหาวิทยาลัยสงขลานครินทร์
+const WALAILAK_C4 = [8.638222, 99.897976] //ใส่พิกัดละติจูตและลองจิจูตของอาคารวิชาการ 4
+// const WALAILAK_C4 = [7.007035606988076, 100.50128332387776] //ใส่พิกัดละติจูตและลองจิจูตของ มหาวิทยาลัยสงขลานครินทร์
 
 const DEFAULT_ZOOM = 16.5
 const SEARCH_DELAY = 500
@@ -265,7 +265,7 @@ const MapComponents = ({ onLocationSelect }) => {
 
       const initialMarker2 = window.L.marker(WALAILAK_C4)
         .addTo(mapInstance)
-        .bindTooltip("มหาวิทยาลัยสงขลานครินทร์", {
+        .bindTooltip("อาคารวิชาการ 4", {
           permanent: true,
           direction: 'center',
           offset: [0, 0],
@@ -285,7 +285,7 @@ const MapComponents = ({ onLocationSelect }) => {
 
         if (marker2Element) {
           marker2Element.classList.add('clickable-marker');
-          marker2Element.setAttribute('title', 'คลิกเพื่อดูข้อมูลมหาวิทยาลัยสงขลานครินทร์');
+          marker2Element.setAttribute('title', 'คลิกเพื่อดูข้อมูลอาคารวิชาการ 4');
         }
       }, 100);
 
